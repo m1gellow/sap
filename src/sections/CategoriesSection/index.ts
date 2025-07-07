@@ -1,0 +1,1 @@
+export { SupRentalSection } from './CategoriesSection';
