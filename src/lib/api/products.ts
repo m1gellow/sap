@@ -34,7 +34,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
 };
 
 // Получение товара по ID
-export const getProductById = async (id: number): Promise<Product | null> => {
+export const getProductById = async (id: string): Promise<Product | null> => {
   try {
     const { data, error } = await supabase
       .from('products')

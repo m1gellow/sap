@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BrandFilter, FilterState, PriceRange } from '../types';
 import { supabase } from '../supabase';
 
 interface FilterContextType {

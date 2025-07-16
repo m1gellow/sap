@@ -134,8 +134,36 @@ export interface CdekOrder {
       amount: number;
     }>;
   }>;
+  recipient?: {
+    name: string;
+    phones: Array<{
+      number: string;
+    }>;
+  };
   services?: Array<{
     code: string;
     parameter?: string;
   }>;
+}
+
+export interface CdekCalculationResult {
+  delivery_sum: number;
+  period_min: number;
+  period_max: number;
+  calendar_min: number;
+  calendar_max: number;
+  tariff_code: number;
+  tariff_name: string;
+  tariff_description: string;
+  delivery_mode: number;
+}
+
+export interface CdekError {
+  code: string;
+  message: string;
+}
+
+export interface CdekCalculationResponse {
+  tariff_codes?: CdekCalculationResult[];
+  errors?: CdekError[];
 }

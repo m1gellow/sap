@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getAllSettings, updateSettings, updateAllSettings, SettingsData } from '../api/settings';
-import { GeneralSettings, DeliverySettings, PaymentSettings, NotificationSettings } from '../../types';
+import { GeneralSettings, DeliverySettings, PaymentSettings, NotificationSettings } from '../../types/types';
 
 interface SettingsContextType {
   settings: SettingsData | null;
@@ -25,7 +25,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const loadSettings = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const settingsData = await getAllSettings();
       setSettings(settingsData);
@@ -45,7 +45,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updateGeneralSettings = async (generalSettings: GeneralSettings) => {
     try {
       await updateSettings('general', generalSettings);
-      setSettings(prev => prev ? { ...prev, general: generalSettings } : null);
+      setSettings((prev) => (prev ? { ...prev, general: generalSettings } : null));
     } catch (err) {
       console.error('Ошибка при обновлении общих настроек:', err);
       throw err;
@@ -56,7 +56,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updateDeliverySettings = async (deliverySettings: DeliverySettings) => {
     try {
       await updateSettings('delivery', deliverySettings);
-      setSettings(prev => prev ? { ...prev, delivery: deliverySettings } : null);
+      setSettings((prev) => (prev ? { ...prev, delivery: deliverySettings } : null));
     } catch (err) {
       console.error('Ошибка при обновлении настроек доставки:', err);
       throw err;
@@ -67,7 +67,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updatePaymentSettings = async (paymentSettings: PaymentSettings) => {
     try {
       await updateSettings('payment', paymentSettings);
-      setSettings(prev => prev ? { ...prev, payment: paymentSettings } : null);
+      setSettings((prev) => (prev ? { ...prev, payment: paymentSettings } : null));
     } catch (err) {
       console.error('Ошибка при обновлении настроек оплаты:', err);
       throw err;
@@ -78,7 +78,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   const updateNotificationSettings = async (notificationSettings: NotificationSettings) => {
     try {
       await updateSettings('notifications', notificationSettings);
-      setSettings(prev => prev ? { ...prev, notifications: notificationSettings } : null);
+      setSettings((prev) => (prev ? { ...prev, notifications: notificationSettings } : null));
     } catch (err) {
       console.error('Ошибка при обновлении настроек уведомлений:', err);
       throw err;

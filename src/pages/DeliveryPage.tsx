@@ -3,13 +3,14 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../lib/context/CartContext';
 import { useSettings } from '../lib/context/SettingsContext';
 import { useProfile } from '../lib/context/ProfileContext';
 import { useAuth } from '../lib/context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { icons } from '../assets/icons';
+import { Breadcrumbs } from '../lib/utils/BreadCrumbs';
 
 const DeliveryPage = () => {
   const { clearCart, totalPrice, cartItems } = useCart();
@@ -52,7 +53,7 @@ const DeliveryPage = () => {
       setEmail(profile.email || '');
       setName(profile.name || '');
       setPhone(profile.phone || '');
-      
+
       // Парсим адрес если он есть
       if (profile.address) {
         const addressParts = profile.address.split(', ');
@@ -67,14 +68,14 @@ const DeliveryPage = () => {
   }, [profile]);
 
   // Получаем настройки доставки и оплаты
-  const deliveryMethods = settings?.delivery?.deliveryMethods?.filter(method => method.enabled) || [
+  const deliveryMethods = settings?.delivery?.deliveryMethods?.filter((method) => method.enabled) || [
     { id: 'cdek', name: 'СДЭК', enabled: true, price: 300 },
     { id: 'russian_post', name: 'Почта России', enabled: true, price: 250 },
     { id: 'yandex_taxi', name: 'Яндекс Такси', enabled: true, price: 400 },
   ];
 
   // Получаем базовые способы оплаты
-  const basePaymentMethods = settings?.payment?.paymentMethods?.filter(method => method.enabled) || [
+  const basePaymentMethods = settings?.payment?.paymentMethods?.filter((method) => method.enabled) || [
     { id: 'card', name: 'Банковская карта', enabled: true },
     { id: 'sbp', name: 'СБП', enabled: true },
   ];
@@ -83,23 +84,23 @@ const DeliveryPage = () => {
   const paymentMethods = React.useMemo(() => {
     // Базовые способы оплаты доступны всегда
     const methods = [...basePaymentMethods];
-    
+
     // Добавляем оплату наличными только для Екатеринбурга
     if (city.toLowerCase() === 'екатеринбург') {
-      const cashMethod = settings?.payment?.paymentMethods?.find(m => m.id === 'cash');
+      const cashMethod = settings?.payment?.paymentMethods?.find((m) => m.id === 'cash');
       if (cashMethod) {
         methods.push(cashMethod);
       } else {
         methods.push({ id: 'cash', name: 'Наличными при получении', enabled: true });
       }
     }
-    
+
     return methods;
   }, [city, basePaymentMethods, settings?.payment?.paymentMethods]);
 
   // Сбрасываем способ оплаты, если он больше не доступен
   useEffect(() => {
-    if (paymentMethod === 'cash' && !paymentMethods.some(m => m.id === 'cash')) {
+    if (paymentMethod === 'cash' && !paymentMethods.some((m) => m.id === 'cash')) {
       setPaymentMethod('card');
     }
   }, [paymentMethods, paymentMethod]);
@@ -114,21 +115,21 @@ const DeliveryPage = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Проверяем аутентификацию перед отправкой
     if (!isAuthenticated) {
       setShowProfileModal(true);
       return;
     }
-    
+
     if (!deliveryMethod) {
       alert('Пожалуйста, выберите способ доставки');
       return;
     }
-    
+
     try {
       // Находим выбранный способ доставки
-      const selectedDeliveryMethod = deliveryMethods.find(method => method.id === deliveryMethod);
+      const selectedDeliveryMethod = deliveryMethods.find((method) => method.id === deliveryMethod);
       const deliveryPrice = selectedDeliveryMethod?.price || 0;
       const finalTotal = totalPrice + deliveryPrice;
 
@@ -143,35 +144,31 @@ const DeliveryPage = () => {
       const newOrder = {
         user_id: user.id, // Используем ID авторизованного пользователя
         total_amount: finalTotal, // Включаем стоимость доставки
-        status: "Ожидает оплаты",
+        status: 'Ожидает оплаты',
         customer_name: name,
         customer_email: email,
         customer_phone: phone,
         delivery_address: `${city}, ${region}, ${address}, ${zipCode}`,
-        payment_method: paymentMethods.find(method => method.id === paymentMethod)?.name || paymentMethod,
-        notes: additionalInfo ? `${additionalInfo}. Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)` : `Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)`
+        payment_method: paymentMethods.find((method) => method.id === paymentMethod)?.name || paymentMethod,
+        notes: additionalInfo
+          ? `${additionalInfo}. Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)`
+          : `Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)`,
       };
 
       // 2. Вставляем заказ в таблицу orders
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert(newOrder)
-        .select()
-        .single();
+      const { data: orderData, error: orderError } = await supabase.from('orders').insert(newOrder).select().single();
 
       if (orderError) throw orderError;
 
       // 3. Создаем записи о товарах заказа
-      const orderItems = cartItems.map(item => ({
+      const orderItems = cartItems.map((item) => ({
         order_id: orderData.id,
         product_id: item.product.id,
         quantity: item.quantity,
-        price: item.product.priceValue
+        price: item.product.priceValue,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
 
       if (itemsError) throw itemsError;
 
@@ -179,7 +176,6 @@ const DeliveryPage = () => {
 
       // 4. Перенаправляем на страницу подтверждения
       navigate(`/order-sucess`);
-
     } catch (error) {
       console.error('Ошибка при создании заказа:', error);
       alert('Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
@@ -221,7 +217,7 @@ const DeliveryPage = () => {
   };
 
   // Рассчитываем стоимость доставки
-  const selectedDeliveryMethod = deliveryMethods.find(method => method.id === deliveryMethod);
+  const selectedDeliveryMethod = deliveryMethods.find((method) => method.id === deliveryMethod);
   const deliveryPrice = selectedDeliveryMethod?.price || 0;
   const finalTotal = totalPrice + deliveryPrice;
 
@@ -231,13 +227,8 @@ const DeliveryPage = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-md mx-auto text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Требуется авторизация</h2>
-          <p className="text-gray-600 mb-6">
-            Для оформления заказа необходимо войти в систему или зарегистрироваться.
-          </p>
-          <Button 
-            onClick={() => setShowProfileModal(true)}
-            className="bg-blue text-white px-6 py-3 rounded-lg"
-          >
+          <p className="text-gray-600 mb-6">Для оформления заказа необходимо войти в систему или зарегистрироваться.</p>
+          <Button onClick={() => setShowProfileModal(true)} className="bg-blue text-white px-6 py-3 rounded-lg">
             Войти или зарегистрироваться
           </Button>
         </div>
@@ -248,17 +239,7 @@ const DeliveryPage = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Хлебные крошки */}
-      <div className="text-sm text-gray-500 mb-6">
-        <Link to="/" className="hover:text-blue">
-          Главная
-        </Link>
-        <span className="mx-2">›</span>
-        <Link to="/cart" className="hover:text-blue">
-          Корзина
-        </Link>
-        <span className="mx-2">›</span>
-        <span className="text-gray-700">Доставка</span>
-      </div>
+      <Breadcrumbs />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Левая колонка - информация о доставке */}
@@ -386,12 +367,8 @@ const DeliveryPage = () => {
                     <img src={icons.mastercard} alt="Mastercard" className="h-8 ml-2" />
                   </div>
                 )}
-                {method.id === 'sbp' && (
-                  <img src={icons.spb} alt="СБП" className="h-8" />
-                )}
-                {method.id === 'cash' && (
-                  <span className="font-medium">{method.name}</span>
-                )}
+                {method.id === 'sbp' && <img src={icons.spb} alt="СБП" className="h-8" />}
+                {method.id === 'cash' && <span className="font-medium">{method.name}</span>}
                 {paymentMethod === method.id && <CheckIcon className="ml-2 h-4 w-4 text-blue" />}
               </button>
             ))}
@@ -457,12 +434,8 @@ const DeliveryPage = () => {
             </div>
 
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600">
-                Доставка ({selectedDeliveryMethod?.name})
-              </span>
-              <span className="font-medium">
-                {deliveryPrice.toLocaleString()} ₽
-              </span>
+              <span className="text-gray-600">Доставка ({selectedDeliveryMethod?.name})</span>
+              <span className="font-medium">{deliveryPrice.toLocaleString()} ₽</span>
             </div>
 
             <div className="flex justify-between pt-2 mt-2 border-t border-gray-100">

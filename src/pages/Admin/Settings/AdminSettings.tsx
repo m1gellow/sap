@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, Check, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
-import { TAB_ITEMS } from '../../../types';
+import { TAB_ITEMS } from '../../../types/types';
 import { GeneralSettingsTab } from './components/GeneralSettingsTab';
 import { DeliverySettingsTab } from './components/DeliverySettingsTab';
 import { PaymentSettingsTab } from './components/PaymentSettingsTab';
@@ -11,15 +11,10 @@ import { useAdmin } from '../../../lib/context/AdminContext';
 import { AdminWarningModal } from '../../../components/Admin/AdminWarningModal';
 
 export const AdminSettings = () => {
-  const { 
-    settings, 
-    isLoading, 
-    error, 
-    updateAllSettingsData 
-  } = useSettings();
-  
+  const { settings, isLoading, error, updateAllSettingsData } = useSettings();
+
   const { adminUser } = useAdmin();
-  
+
   const [activeTab, setActiveTab] = useState('general');
   const [showSavedMessage, setShowSavedMessage] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +51,7 @@ export const AdminSettings = () => {
 
   const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!localSettings) return;
-    
+
     const { name, value } = e.target;
     setLocalSettings({
       ...localSettings,
@@ -126,9 +121,7 @@ export const AdminSettings = () => {
         ...localSettings,
         delivery: {
           ...localSettings.delivery,
-          deliveryMethods: localSettings.delivery.deliveryMethods.filter(
-            (method) => method.id !== methodId
-          ),
+          deliveryMethods: localSettings.delivery.deliveryMethods.filter((method) => method.id !== methodId),
         },
       });
     }
@@ -169,8 +162,8 @@ export const AdminSettings = () => {
     if (!localSettings) return;
 
     // Проверяем, что остается хотя бы один способ оплаты
-    const enabledMethods = localSettings.payment.paymentMethods.filter(method => method.enabled);
-    if (enabledMethods.length <= 1 && enabledMethods.some(method => method.id === methodId)) {
+    const enabledMethods = localSettings.payment.paymentMethods.filter((method) => method.enabled);
+    if (enabledMethods.length <= 1 && enabledMethods.some((method) => method.id === methodId)) {
       alert('Должен остаться хотя бы один активный способ оплаты');
       return;
     }
@@ -180,9 +173,7 @@ export const AdminSettings = () => {
         ...localSettings,
         payment: {
           ...localSettings.payment,
-          paymentMethods: localSettings.payment.paymentMethods.filter(
-            (method) => method.id !== methodId
-          ),
+          paymentMethods: localSettings.payment.paymentMethods.filter((method) => method.id !== methodId),
         },
       });
     }
@@ -285,10 +276,7 @@ export const AdminSettings = () => {
 
         <div className="p-6">
           {activeTab === 'general' && (
-            <GeneralSettingsTab 
-              settings={localSettings.general} 
-              onChange={handleGeneralChange} 
-            />
+            <GeneralSettingsTab settings={localSettings.general} onChange={handleGeneralChange} />
           )}
 
           {activeTab === 'delivery' && (
@@ -313,10 +301,7 @@ export const AdminSettings = () => {
       </div>
 
       {/* Модальное окно предупреждения для неадминистраторов */}
-      <AdminWarningModal 
-        isOpen={showWarningModal} 
-        onClose={() => setShowWarningModal(false)} 
-      />
+      <AdminWarningModal isOpen={showWarningModal} onClose={() => setShowWarningModal(false)} />
     </div>
   );
 };

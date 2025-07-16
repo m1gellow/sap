@@ -1,34 +1,48 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CartItem, Product } from '../types';
-import { useSettings } from './SettingsContext';
-import { convertPrice } from '../utils/currency';
 
+import { createContext, useContext, useEffect, useState } from 'react';
+import { MoySkladProduct } from '../../types/types'; // Убедитесь, что путь к вашим типам верный
+
+// ========================================================================
+// ИЗМЕНЕНИЕ 1: Определяем новый тип для элемента корзины.
+// Это ключевое изменение. Корзина хранит не просто товары, а объекты,
+// которые содержат товар и его количество.
+// ========================================================================
+export interface CartItem {
+  product: MoySkladProduct;
+  quantity: number;
+}
+
+// ========================================================================
+// ИЗМЕНЕНИЕ 2: Обновляем интерфейс контекста.
+// - cartItems теперь массив CartItem[]
+// - ID в функциях теперь string
+// ========================================================================
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: MoySkladProduct, quantity?: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   totalItems: number;
-  totalPrice: number;
+  totalPrice: number; 
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'cart_items';
+const CART_STORAGE_KEY = 'moy_sklad_cart_items'; 
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  
   const [totalItems, setTotalItems] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const { settings } = useSettings();
 
-  // Загружаем корзину из localStorage при инициализации
   useEffect(() => {
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        const parsedCart: CartItem[] = JSON.parse(savedCart);
+        setCartItems(parsedCart);
       } catch (error) {
         console.error('Ошибка при загрузке корзины из localStorage:', error);
         localStorage.removeItem(CART_STORAGE_KEY);
@@ -36,50 +50,52 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Сохраняем корзину в localStorage при изменении
+  // Сохраняем корзину в localStorage при каждом ее изменении
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
-  }, [cartItems]);
 
-  // Обновление общего количества и цены при изменении корзины
-  useEffect(() => {
+    // Обновляем общее количество и цену
     const itemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-    // Рассчитываем общую стоимость в рублях (базовая валюта)
+    
+    // ========================================================================
+    // ИЗМЕНЕНИЕ 4: Правильный расчет цены с использованием `sale_price`
+    // Используем `?? 0` на случай, если у товара нет цены (sale_price is null)
+    // ========================================================================
     const priceInRubles = cartItems.reduce((sum, item) => {
-      const priceValue = item.product.priceValue || 0;
-      return sum + priceValue * item.quantity;
+      const price = item.product.sale_price ?? 0;
+      return sum + price * item.quantity;
     }, 0);
 
     setTotalItems(itemsCount);
-    setTotalPrice(priceInRubles); // Всегда храним цену в рублях
+    setTotalPrice(priceInRubles);
   }, [cartItems]);
 
   // Добавление товара в корзину
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: MoySkladProduct, quantity = 1) => {
     setCartItems((prevItems) => {
-      // Проверяем, есть ли уже этот товар в корзине
       const existingItem = prevItems.find((item) => item.product.id === product.id);
 
       if (existingItem) {
-        // Если есть, увеличиваем количество
+        // Если товар уже есть, обновляем его количество
         return prevItems.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item,
         );
       } else {
-        // Если нет, добавляем новый товар
+        // Если товара нет, добавляем его как новый элемент корзины
         return [...prevItems, { product, quantity }];
       }
     });
   };
 
-  // Удаление товара из корзины
-  const removeFromCart = (productId: number) => {
+  // ========================================================================
+  // ИЗМЕНЕНИЕ 5: ID теперь string
+  // ========================================================================
+  const removeFromCart = (productId: string) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
   };
 
-  // Обновление количества товара
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number) => {
+    // Если количество 0 или меньше, удаляем товар
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -90,7 +106,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
-  // Очистка корзины
   const clearCart = () => {
     setCartItems([]);
   };
@@ -112,11 +127,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Хук для использования контекста корзины
+// Хук для удобного использования контекста в компонентах
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error('useCart должен использоваться внутри CartProvider');
   }
   return context;
 };

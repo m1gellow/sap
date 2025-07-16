@@ -1,9 +1,9 @@
-import { Truck, Plus, Trash2 } from "lucide-react";
-import { DeliverySettings } from "../../../../types";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { Input } from "../../../../components/ui/input";
-import { Button } from "../../../../components/ui/button";
-import { useState } from "react";
+import { Truck, Plus, Trash2 } from 'lucide-react';
+import { DeliverySettings } from '../../../../types/types';
+import { Checkbox } from '@radix-ui/react-checkbox';
+import { Input } from '../../../../components/ui/input';
+import { Button } from '../../../../components/ui/button';
+import { useState } from 'react';
 
 interface DeliverySettingsTabProps {
   settings: DeliverySettings;
@@ -35,10 +35,13 @@ export const DeliverySettingsTab = ({
       return;
     }
 
-    const id = newMethodName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    
+    const id = newMethodName
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+
     // Проверяем, что такого ID еще нет
-    if (settings.deliveryMethods.some(method => method.id === id)) {
+    if (settings.deliveryMethods.some((method) => method.id === id)) {
       alert('Способ доставки с таким названием уже существует');
       return;
     }
@@ -63,8 +66,8 @@ export const DeliverySettingsTab = ({
       <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-100 mb-6">
         <h4 className="text-sm font-medium text-yellow-800 mb-2">Важно!</h4>
         <p className="text-sm text-yellow-700">
-          Стоимость доставки автоматически добавляется к общей сумме заказа при оформлении. 
-          Убедитесь, что цены указаны корректно.
+          Стоимость доставки автоматически добавляется к общей сумме заказа при оформлении. Убедитесь, что цены указаны
+          корректно.
         </p>
       </div>
 
@@ -140,10 +143,7 @@ export const DeliverySettingsTab = ({
             <span className="text-sm text-gray-500">₽</span>
           </div>
         </div>
-        <Button
-          onClick={handleAddNewMethod}
-          className="mt-3   text-white"
-        >
+        <Button onClick={handleAddNewMethod} className="mt-3   text-white">
           <Plus size={16} className="mr-2" />
           Добавить способ доставки
         </Button>

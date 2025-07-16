@@ -11,9 +11,10 @@ import { AddedToCartModal } from '../components/ProductCard/AddedToCartModal';
 import { RecommendedProducts } from '../components/ProductCard/RecommendedProducts';
 import { getProductById } from '../lib/api/products';
 import { getRecommendedProducts } from '../lib/data/products';
-import { Product } from '../lib/types';
+
 import { formatPrice } from '../lib/utils/currency';
 import { cn } from '../lib/utils';
+import { MoySkladProduct } from '../types/types';
 
 export const ProductPage: React.FC = () => {
   const { addToCart } = useCart();
@@ -23,8 +24,8 @@ export const ProductPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [showAddedToCart, setShowAddedToCart] = useState(false);
   const { id } = useParams();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [product, setProduct] = useState<MoySkladProduct | null>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<MoySkladProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const productId = parseInt(id || '1');

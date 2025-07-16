@@ -1,9 +1,9 @@
-import { CreditCard, Plus, Trash2 } from "lucide-react";
-import { PaymentSettings } from "../../../../types";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { Input } from "../../../../components/ui/input";
-import { Button } from "../../../../components/ui/button";
-import { useState } from "react";
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
+import { PaymentSettings } from '../../../../types/types';
+import { Checkbox } from '@radix-ui/react-checkbox';
+import { Input } from '../../../../components/ui/input';
+import { Button } from '../../../../components/ui/button';
+import { useState } from 'react';
 
 interface PaymentSettingsTabProps {
   settings: PaymentSettings;
@@ -26,10 +26,13 @@ export const PaymentSettingsTab = ({
       return;
     }
 
-    const id = newMethodName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    
+    const id = newMethodName
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+
     // Проверяем, что такого ID еще нет
-    if (settings.paymentMethods.some(method => method.id === id)) {
+    if (settings.paymentMethods.some((method) => method.id === id)) {
       alert('Способ оплаты с таким названием уже существует');
       return;
     }
@@ -52,8 +55,8 @@ export const PaymentSettingsTab = ({
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-6">
         <h4 className="text-sm font-medium text-blue mb-2">Информация</h4>
         <p className="text-sm text-blue">
-          Управляйте доступными способами оплаты для ваших клиентов. 
-          Отключенные способы оплаты не будут отображаться при оформлении заказа.
+          Управляйте доступными способами оплаты для ваших клиентов. Отключенные способы оплаты не будут отображаться
+          при оформлении заказа.
         </p>
       </div>
 
@@ -102,10 +105,7 @@ export const PaymentSettingsTab = ({
             onChange={(e) => setNewMethodName(e.target.value)}
             className="flex-1"
           />
-          <Button
-            onClick={handleAddNewMethod}
-            className="bg-blue text-white"
-          >
+          <Button onClick={handleAddNewMethod} className="bg-blue text-white">
             <Plus size={16} className="mr-2 " />
             Добавить
           </Button>

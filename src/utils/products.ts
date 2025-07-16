@@ -1,5 +1,5 @@
-import { Product } from "../lib/types";
-import { SortConfig } from "../types";
+import { Product } from '../lib/types';
+import { SortConfig } from '../types/types';
 
 export const filterProducts = (products: Product[], searchTerm: string, selectedCategory: string) => {
   let filtered = [...products];
@@ -25,9 +25,7 @@ export const sortProducts = (products: Product[], sortBy: SortConfig) => {
     const fieldA = sortBy.field === 'price' ? a.priceValue : a[sortBy.field as keyof Product];
     const fieldB = sortBy.field === 'price' ? b.priceValue : b[sortBy.field as keyof Product];
 
-    return sortBy.direction === 'asc' 
-      ? fieldA > fieldB ? 1 : -1
-      : fieldA < fieldB ? 1 : -1;
+    return sortBy.direction === 'asc' ? (fieldA > fieldB ? 1 : -1) : fieldA < fieldB ? 1 : -1;
   });
 };
 

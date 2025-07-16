@@ -3,12 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Filter, ChevronDown, X, Loader2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { getAllProducts, getAllCategories, createProduct, updateProduct, deleteProduct } from '../../../lib/api/products';
+import {
+  getAllProducts,
+  getAllCategories,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '../../../lib/api/products';
 import { ProductFormModal } from './components/ProductFormModal';
 import { ProductsTable } from './components/ProductsTable';
 import { Pagination } from './components/Pagination';
 import { Product } from '../../../lib/types';
-import { Category, SortConfig } from '../../../types';
+import { Category, SortConfig } from '../../../types/types';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { filterProducts, sortProducts } from '../../../utils/products';
 import { ProductOrderWarningModal } from '../../../components/Admin/ProductOrderWarningModal';
@@ -39,10 +45,7 @@ export const AdminProducts = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const [productsData, categoriesData] = await Promise.all([
-          getAllProducts(),
-          getAllCategories(),
-        ]);
+        const [productsData, categoriesData] = await Promise.all([getAllProducts(), getAllCategories()]);
         setProducts(productsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -56,10 +59,7 @@ export const AdminProducts = () => {
     fetchData();
   }, []);
 
-  const filteredProducts = sortProducts(
-    filterProducts(products, searchTerm, selectedCategory),
-    sortBy
-  );
+  const filteredProducts = sortProducts(filterProducts(products, searchTerm, selectedCategory), sortBy);
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -102,20 +102,18 @@ export const AdminProducts = () => {
       if (formData.id && formData.id > 0) {
         // Обновляем существующий товар
         savedProduct = await updateProduct(formData.id, formData);
-        
+
         // Обновляем товар в локальном состоянии
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product.id === formData.id ? savedProduct : product
-          )
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => (product.id === formData.id ? savedProduct : product)),
         );
       } else {
         // Создаем новый товар
         const { id, ...productDataWithoutId } = formData;
         savedProduct = await createProduct(productDataWithoutId);
-        
+
         // Добавляем новый товар в локальное состояние
-        setProducts(prevProducts => [...prevProducts, savedProduct]);
+        setProducts((prevProducts) => [...prevProducts, savedProduct]);
       }
 
       setIsModalOpen(false);
@@ -138,11 +136,9 @@ export const AdminProducts = () => {
 
     try {
       await deleteProduct(selectedProduct.id);
-      
+
       // Удаляем товар из локального состояния
-      setProducts(prevProducts => 
-        prevProducts.filter(product => product.id !== selectedProduct.id)
-      );
+      setProducts((prevProducts) => prevProducts.filter((product) => product.id !== selectedProduct.id));
 
       setIsDeleteModalOpen(false);
       setSelectedProduct(null);
@@ -175,10 +171,7 @@ export const AdminProducts = () => {
       <div className="space-y-6">
         <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-md">
           <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-2 text-sm underline hover:no-underline"
-          >
+          <button onClick={() => window.location.reload()} className="mt-2 text-sm underline hover:no-underline">
             Обновить страницу
           </button>
         </div>
@@ -311,11 +304,7 @@ export const AdminProducts = () => {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <ProductsTable
-                products={currentProducts}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-              />
+              <ProductsTable products={currentProducts} onEdit={handleEditProduct} onDelete={handleDeleteProduct} />
             </div>
 
             {filteredProducts.length > 0 && (

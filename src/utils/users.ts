@@ -1,4 +1,4 @@
-import { User } from "../types";
+import { User } from '../types/types';
 
 export const filterUsers = (users: User[], searchTerm: string, roleFilter: string, statusFilter: string) => {
   let filtered = [...users];
@@ -24,7 +24,7 @@ export const filterUsers = (users: User[], searchTerm: string, roleFilter: strin
 
 export const formatDate = (dateString?: string) => {
   if (!dateString) return 'Никогда';
-  
+
   const date = new Date(dateString);
   return date.toLocaleString('ru-RU', {
     day: '2-digit',
@@ -37,17 +37,24 @@ export const formatDate = (dateString?: string) => {
 
 export const getRoleBadgeClass = (role: string) => {
   switch (role) {
-    case 'admin': return 'bg-purple-100 text-purple-800';
-    case 'manager': return 'bg-blue text-blue';
-    case 'customer': return 'bg-green-100 text-green-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'admin':
+      return 'bg-purple-100 text-purple-800';
+    case 'manager':
+      return 'bg-blue text-blue';
+    case 'customer':
+      return 'bg-green-100 text-green-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
 export const getStatusBadgeClass = (status: string) => {
   switch (status) {
-    case 'active': return 'bg-green-100 text-green-800';
-    case 'inactive': return 'bg-gray-100 text-gray-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'active':
+      return 'bg-green-100 text-green-800';
+    case 'inactive':
+      return 'bg-gray-100 text-gray-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
   }
 };

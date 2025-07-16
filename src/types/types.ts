@@ -30,6 +30,32 @@ export interface Product {
   description: string;
 }
 
+export type MoySkladProduct = {
+
+  id: string;
+
+  name: string;
+
+  description: string | null;
+
+  archived: boolean;
+
+  path_name: string | null;
+
+  sale_price: number | null;
+
+  article: string | null;
+
+  weight: number | null;
+
+  image_url: string | null;
+
+  stock: number;
+  reserve: number;
+  in_transit: number;
+  created_at?: string;
+};
+
 export interface Category {
   id: number;
   name: string;

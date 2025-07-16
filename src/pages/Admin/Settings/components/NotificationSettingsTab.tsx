@@ -1,17 +1,14 @@
-import { Bell } from "lucide-react";
-import { NotificationSettings } from "../../../../types";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { Input } from "../../../../components/ui/input";
+import { Bell } from 'lucide-react';
+import { NotificationSettings } from '../../../../types/types';
+import { Checkbox } from '@radix-ui/react-checkbox';
+import { Input } from '../../../../components/ui/input';
 
 interface NotificationSettingsTabProps {
   settings: NotificationSettings;
   onChange: (field: string, value: boolean | string) => void;
 }
 
-export const NotificationSettingsTab = ({
-  settings,
-  onChange,
-}: NotificationSettingsTabProps) => (
+export const NotificationSettingsTab = ({ settings, onChange }: NotificationSettingsTabProps) => (
   <div className="space-y-6">
     <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
       <Bell size={20} className="text-blue" />
@@ -20,7 +17,7 @@ export const NotificationSettingsTab = ({
 
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-gray-900 mb-3">Уведомления администратора</h3>
-      
+
       <div className="space-y-4">
         <div className="flex items-center space-x-3">
           <Checkbox
@@ -61,7 +58,7 @@ export const NotificationSettingsTab = ({
 
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-gray-900 mb-3">Уведомления клиентов</h3>
-      
+
       <div className="flex items-center space-x-3">
         <Checkbox
           id="enableCustomerNotifications"
@@ -78,8 +75,8 @@ export const NotificationSettingsTab = ({
     <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
       <h4 className="text-sm font-medium text-yellow-800 mb-2">Важная информация</h4>
       <p className="text-sm text-yellow-700">
-        Для работы уведомлений необходимо настроить SMTP-сервер или интеграцию с почтовым сервисом.
-        Обратитесь к разработчику для настройки отправки email.
+        Для работы уведомлений необходимо настроить SMTP-сервер или интеграцию с почтовым сервисом. Обратитесь к
+        разработчику для настройки отправки email.
       </p>
     </div>
   </div>

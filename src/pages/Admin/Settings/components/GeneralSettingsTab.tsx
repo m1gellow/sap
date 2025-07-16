@@ -1,7 +1,6 @@
-import { Server } from "lucide-react";
-import { CURRENCY_OPTIONS, GeneralSettings } from "../../../../types";
-import { Input } from "../../../../components/ui/input";
-
+import { Server } from 'lucide-react';
+import { CURRENCY_OPTIONS, GeneralSettings } from '../../../../types/types';
+import { Input } from '../../../../components/ui/input';
 
 interface GeneralSettingsTabProps {
   settings: GeneralSettings;
@@ -36,12 +35,7 @@ export const GeneralSettingsTab = ({ settings, onChange }: GeneralSettingsTabPro
 
       <div className="md:col-span-2 space-y-2">
         <label className="block text-sm font-medium text-gray-700">Адрес</label>
-        <Input
-          type="text"
-          name="address"
-          value={settings.address}
-          onChange={onChange}
-        />
+        <Input type="text" name="address" value={settings.address} onChange={onChange} />
       </div>
 
       <div className="space-y-2">

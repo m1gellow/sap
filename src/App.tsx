@@ -34,7 +34,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { AdminSettings } from './pages/Admin/Settings/AdminSettings';
 import { AdminUsers } from './pages/Admin/Users/AdminUsers';
 import { AdminLogin } from './pages/Admin/Login/AdminLogin';
-import { Product } from './types';
+import { Product } from './types/types';
 
 const AppContent = (): JSX.Element => {
   const { filters } = useFilters();

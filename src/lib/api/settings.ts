@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { GeneralSettings, DeliverySettings, PaymentSettings, NotificationSettings } from '../../types';
+import { GeneralSettings, DeliverySettings, PaymentSettings, NotificationSettings } from '../../types/types';
 
 export interface SettingsData {
   general: GeneralSettings;
@@ -54,7 +54,7 @@ export const getAllSettings = async (): Promise<SettingsData> => {
 
     // Объединяем настройки по умолчанию с данными из базы
     const settings = { ...defaultSettings };
-    
+
     if (data) {
       data.forEach((setting) => {
         if (setting.key in settings) {
@@ -76,15 +76,16 @@ export const getAllSettings = async (): Promise<SettingsData> => {
 // Обновление настроек
 export const updateSettings = async (key: keyof SettingsData, value: any): Promise<void> => {
   try {
-    const { error } = await supabase
-      .from('settings')
-      .upsert({
+    const { error } = await supabase.from('settings').upsert(
+      {
         key,
         value,
         description: getSettingDescription(key),
-      }, {
-        onConflict: 'key'
-      });
+      },
+      {
+        onConflict: 'key',
+      },
+    );
 
     if (error) throw error;
   } catch (error) {
@@ -102,11 +103,9 @@ export const updateAllSettings = async (settings: SettingsData): Promise<void> =
       description: getSettingDescription(key as keyof SettingsData),
     }));
 
-    const { error } = await supabase
-      .from('settings')
-      .upsert(updates, {
-        onConflict: 'key'
-      });
+    const { error } = await supabase.from('settings').upsert(updates, {
+      onConflict: 'key',
+    });
 
     if (error) throw error;
   } catch (error) {
@@ -129,14 +128,10 @@ const getSettingDescription = (key: keyof SettingsData): string => {
 // Получение конкретной настройки
 export const getSetting = async <T>(key: keyof SettingsData): Promise<T | null> => {
   try {
-    const { data, error } = await supabase
-      .from('settings')
-      .select('value')
-      .eq('key', key)
-      .single();
+    const { data, error } = await supabase.from('settings').select('value').eq('key', key).single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    
+
     return data?.value || null;
   } catch (error) {
     console.error(`Ошибка при получении настройки ${key}:`, error);
