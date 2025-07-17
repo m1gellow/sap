@@ -8,7 +8,7 @@ import { CartItem } from '../components/Cart/CartItem';
 import { Trash2Icon, ShoppingCartIcon, ArrowLeftIcon, TruckIcon, ShieldCheckIcon, GiftIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatPrice } from '../lib/utils/currency';
-import clsx from 'clsx';
+
 
 export const CartPage: React.FC = () => {
   const { cartItems, totalItems, totalPrice, clearCart } = useCart();

@@ -27,12 +27,6 @@ export const NewProductCard = ({ product, isLarge = false, className = '' }: New
   const { addToCart } = useCart();
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const { settings } = useSettings();
-
-  // ========================================================================
-  // ИСПРАВЛЕНО: Теперь мы передаем в `addToCart` оригинальный объект `product`.
-  // Наш CartContext сам знает, как с ним работать.
-  // Мы больше не создаем неверную структуру объекта.
-  // ========================================================================
   const handleAddToCart = () => {
     if (product) {
       addToCart(product, 1); // Передаем сам продукт и количество
@@ -67,7 +61,7 @@ export const NewProductCard = ({ product, isLarge = false, className = '' }: New
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className={`relative ${isLarge ? 'h-[400px] flex-grow' : 'h-64'} overflow-hidden rounded-lg bg-gray-100`}>
+        <div className={`relative ${isLarge ? 'h-[400px] flex-grow' : 'h-64'} overflow-hidden rounded-lg `}>
           <Link to={`/product/${product?.id}`} className="block h-full">
             <motion.img
               // ИСПОЛЬЗУЕМ ЗАГЛУШКУ, если image_url отсутствует

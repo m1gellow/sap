@@ -3,6 +3,8 @@ import { AnimatePresence } from 'framer-motion';
 import { Button } from '../components/ui/button';
 import { HeartIcon, PlusIcon, MinusIcon, Loader2, BarChart3 as CompareIcon } from 'lucide-react';
 import { useSettings } from '../lib/context/SettingsContext';
+import { useCart } from '../lib/context/CartContext';
+import { useFavorites } from '../lib/context/FavoritesContext';
 import { Link, useParams } from 'react-router-dom';
 import { AddedToCartModal } from '../components/ProductCard/AddedToCartModal';
 import { getProductById } from '../lib/api/products';
@@ -148,6 +150,8 @@ const DescriptionContent: React.FC<{ description: string }> = ({ description }) 
 
 export const ProductPage: React.FC = () => {
   const { settings } = useSettings();
+  const { addToCart } = useCart();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<MoySkladProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,6 +178,20 @@ export const ProductPage: React.FC = () => {
   }, [id]);
 
   const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity);
+      setShowAddedToCart(true);
+    }
+  };
+
+  const toggleFavorite = () => {
+    if (product) {
+      if (isFavorite(product.id)) {
+        removeFromFavorites(product.id);
+      } else {
+        addToFavorites(product);
+      }
+    }
     setShowAddedToCart(true);
   };
 
@@ -304,8 +322,13 @@ export const ProductPage: React.FC = () => {
                 variant="outline"
                 size="icon"
                 className="bg-[#0D263D] text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 hover:bg-[#1a3a5a] hover:text-white"
+                onClick={toggleFavorite}
               >
-                <HeartIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                <HeartIcon 
+                  className="w-5 h-5 sm:w-6 sm:h-6" 
+                  fill={product && isFavorite(product.id) ? 'red' : 'none'}
+                  stroke={product && isFavorite(product.id) ? 'red' : 'currentColor'}
+                />
               </Button>
               <Button
                 variant="outline"
