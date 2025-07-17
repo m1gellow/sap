@@ -13,7 +13,7 @@ const ROUTES: Record<string, RouteConfig> = {
   '/basket': { path: '/basket', name: 'Корзина' },
 };
 
-export const Breadcrumbs = () => {
+export const Breadcrumbs = ({ productId }: { productId?: string }) => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter(Boolean);
 
@@ -32,7 +32,9 @@ export const Breadcrumbs = () => {
           <div key={routePath} className="flex items-center">
             <ChevronRight className="mx-2 h-4 w-4" />
             {isLast ? (
-              <span className="text-gray-400">{routeConfig.name}</span>
+              <span className="text-gray-400">
+                {productId !== undefined ? 'AQUATONE Wave All-round SUP' : routeConfig.name}
+              </span>
             ) : (
               <Link to={routeConfig.path} className="hover:text-blue-500 transition-colors">
                 {routeConfig.name}

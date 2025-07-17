@@ -36,34 +36,15 @@ export const getAllProducts = async (): Promise<Product[]> => {
 // Получение товара по ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        categories (
-          name
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    if (!data) return null;
-
-    return {
-      id: data.id,
-      name: data.name,
-      brand: data.brand,
-      price: `${data.price} ₽`,
-      priceValue: data.price,
-      image: data.image,
-      category: data.categories?.name || 'Без категории',
-      inStock: data.in_stock,
-      description: data.description || '',
-    };
+    const {data: produt, error} = await supabase.from("moysklad_products" as never).select("*").eq("id", id);
+    
+    if(error){
+      console.log(error)
+      return
+    }
+    return produt[0];
   } catch (error) {
-    console.error('Ошибка при загрузке товара:', error);
-    throw error;
+      console.log("Error while getting product by id")
   }
 };
 

@@ -48,7 +48,7 @@ export type MoySkladProduct = {
 
   weight: number | null;
 
-  image_url: string | null;
+  image_url: string  | undefined;
 
   stock: number;
   reserve: number;
