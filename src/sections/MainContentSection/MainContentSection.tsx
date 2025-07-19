@@ -1,7 +1,11 @@
 
-import { items } from '../../assets/items';
+
 import { InfoCard } from '../../components/ui/InfoCard';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
+
+import Sup from '../../assets/items/Sup.webp';
+import Sup2 from '../../assets/items/Sup2.webp';
+import Jacket from '../../assets/items/jacket.webp';
 
 export const MainContentSection = () => {
 
@@ -15,19 +19,19 @@ export const MainContentSection = () => {
       <InfoCard
         title="На природу с комфортом и драйвом!"
         description="SUP-доски для озёр, рек и моря — выбери свою!"
-        img={items.Sup}
+        img={Sup}
       />
       
       <div className="flex flex-col gap-5 sm:gap-6 md:gap-8">
         <InfoCard 
           size="small"
           title="Закажи SUP с доставкой" 
-          img={items.Sup2}
+          img={Sup2}
         />
         <InfoCard 
           size="small"
           title="Уже есть SUP? Не забудьте про комплектующие!" 
-          img={items.jacket}
+          img={Jacket}
         />
       </div>
     </SectionWrapper>

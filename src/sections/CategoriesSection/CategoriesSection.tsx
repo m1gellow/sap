@@ -2,15 +2,15 @@ import { useState } from 'react';
 import cn from 'classnames';
 import { SectionWrapper } from '../../components/ui/SectionWrapper';
 import { useNavigate } from 'react-router-dom';
-import { items } from '../../assets/items';
+import { Jacket, Sup, Sup2 } from '../../assets/items';
 
 const categories = [
-  { name: 'SUP', id: 1, image: items.Sup },
-  { name: 'Комплектующие', id: 2, image: items.Sup2 },
-  { name: 'Насосы', id: 3, image: items.jacket },
-  { name: 'Гермомешки и сумки', id: 4, image: items.Sup},
-  { name: 'Спасательные жилеты', id: 5, image: items.jacket },
-  { name: 'Одежда', id: 6, image: items.Sup2 },
+  { name: 'SUP', id: 1, image: Sup },
+  { name: 'Комплектующие', id: 2, image: Sup2 },
+  { name: 'Насосы', id: 3, image: Jacket },
+  { name: 'Гермомешки и сумки', id: 4, image: Sup},
+  { name: 'Спасательные жилеты', id: 5, image: Jacket },
+  { name: 'Одежда', id: 6, image: Sup2 },
 ];
 
 const CategoryCard = ({

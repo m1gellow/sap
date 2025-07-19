@@ -1,213 +1,130 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../../lib/context/CartContext';
 import { useSettings } from '../../lib/context/SettingsContext';
-import { useProfile } from '../../lib/context/ProfileContext';
-import { useAdmin } from '../../lib/context/AdminContext';
-import { Grid2x2Plus, Heart, Menu, ShoppingBag, UserRound, X, Shield } from 'lucide-react';
+import { Grid2x2Plus, Heart, Menu, X, Shield, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import cn from 'classnames';
 
+// import { useProfile } from '../../lib/context/ProfileContext';
+import { CartInfo } from '../../components/ui/CartInfo';
+import { ProfileActions } from '../../components/Profile/ProfileActions';
+import { useCopyToClipboard } from '../../lib/hooks/useCopyToClipboard';
+
+const mainNavLinks = [
+  { href: '/', label: 'Главная' },
+  { href: '/info', label: 'Покупателю' },
+  { href: '/sales', label: 'Акции' },
+  { href: '/delivery', label: 'Доставка и оплата' },
+  { href: '/contacts', label: 'Контакты' },
+];
+
+const categoryLinks = [
+  { href: '/catalog?category=sup', label: 'SUP' },
+  { href: '/catalog?category=accessories', label: 'Комплектующие' },
+  { href: '/catalog?category=rent', label: 'Аренда' },
+  { href: '/catalog?category=tourism', label: 'Товары для туризма и отдыха' },
+];
+
 export const NavSection = (): JSX.Element => {
-  const { totalPrice } = useCart();
   const { settings } = useSettings();
-  const { isAdminAuthenticated } = useAdmin();
-  const { isAuthenticated, setShowProfileModal } = useProfile();
+  // const { isAuthenticated } = useProfile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, copy] = useCopyToClipboard();
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const copyToClipBoard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleProfileClick = () => {
-    setShowProfileModal(true);
-  };
-
-  // Получаем настройки или используем значения по умолчанию
   const contactPhone = settings?.general?.contactPhone || '+7 961 775 7144';
-  const siteName = settings?.general?.siteName || 'SUP Store';
+  const siteName = settings?.general?.siteName || 'Волны и Горы';
 
   return (
-    <div className="text-white m-[20px] relative">
-      <div className="bg-skyblue border-[2px] border-blue rounded-t-[8px]">
-        <div className="container flex justify-center md:justify-between items-center gap-[42.5px]">
-          <div className="flex items-center gap-[40px]">
-            <Link to="/" className="flex items-center">
-              <img alt="Logo" src={'/Logo.png'} className="max-w-[60px] max-h-[80px]" />
+    <header className="m-4  relative text-text-primary">
+      <div className="bg-skyblue border-2  border-blue rounded-t-lg">
+        <div className="container mx-auto flex justify-between items-center h-20">
+          <div className="flex items-center gap-10">
+            <Link to="/" className="flex items-center" title={siteName}>
+              <img alt="Logo" src={'/Logo.png'} className="h-16 w-auto" />
             </Link>
-
-            <div>
-              <Link to="/catalog">
-                <button
-                  className="
-                    bg-blue
-                    hover:bg-blue-700 
-                    active:bg-blue-800 
-                    focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-                    flex items-center gap-2.5 
-                    px-4 py-2.5 
-                    rounded-lg
-                    text-white 
-                    font-medium
-                    transition-all duration-200 ease-in-out
-                    shadow-md hover:shadow-lg
-                    transform hover:-translate-y-0.5 active:translate-y-0
-                    border border-blue-700
-                    group
-                  "
-                >
-                  <Grid2x2Plus
-                    className="
-                      w-5 h-5
-                      transition-transform duration-200
-                      group-hover:scale-110
-                    "
-                  />
-                  <span className="pr-7">Каталог</span>
-                </button>
-              </Link>
-            </div>
+            <Link to="/catalog" className="hidden lg:block">
+              <button className="btn-catalog group">
+                <Grid2x2Plus className="btn-catalog-icon" />
+                <span className="pr-4">Каталог</span>
+              </button>
+            </Link>
           </div>
 
-          <div className="lg:flex hidden">
-            <ul className="text-[#333333] font-bold flex items-center justify-center gap-[50px]">
+          <nav className="hidden lg:flex">
+            <ul className="flex items-center gap-12 text-nav-link">
+              {mainNavLinks.map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="hover:text-blue transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
               <li>
-                <Link to={'/'}>Главная</Link>
-              </li>
-              <li>
-                <Link to={'/contacts'}>Контакты</Link>
-              </li>
-              <li>
-                <Link to={'/cart'}>Корзина</Link>
-              </li>
-              <li>
-                <button className={cn(`${isCopied && 'text-blue'}`)} onClick={() => copyToClipBoard(contactPhone)}>
-                  {isCopied ? 'Copied!' : contactPhone}
+                <button
+                  className={cn('hover:text-blue transition-colors', { 'text-blue font-bold': isCopied })}
+                  onClick={() => copy(contactPhone)}
+                >
+                  {isCopied ? 'Скопировано!' : contactPhone}
                 </button>
-              </li>
-              <li>
-                <Link to="/admin/login">
-                  <Shield color="#333333" size={24} />
-                </Link>
               </li>
             </ul>
+          </nav>
+
+          <div className="hidden md:flex items-center gap-2">
+            <Link to={'/favorites'} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Избранное">
+              <Heart className="text-text-primary" />
+            </Link>
+            <CartInfo />
+            <ProfileActions />
           </div>
 
-          <div className="md:flex hidden items-center justify-center gap-[20px]">
-            <Link to={'/favorites'}>
-              <div className="gap-[8px] flex items-center">
-                <Heart color="#333333" />
-              </div>
-            </Link>
-            <Link to={'/cart'}>
-              <div className="gap-[8px] flex items-center">
-                <ShoppingBag color="#333333" />
-                {totalPrice !== 0 && (
-                  <button className="bg-blue lg:flex hidden gap-[10px] p-[5px] font-light rounded-[8px]">
-                    {totalPrice} р.
-                  </button>
-                )}
-              </div>
-            </Link>
-            {/* Кнопка профиля пользователя */}
-            <button
-              onClick={handleProfileClick}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title={isAuthenticated ? 'Профиль пользователя' : 'Войти в аккаунт'}
-            >
-              <UserRound color="#333333" size={24} />
-            </button>
-          </div>
-
-          <button onClick={toggleMenu} className="md:hidden ">
-            {isMenuOpen ? <X color="#333333" size={24} /> : <Menu color="#333333" size={24} />}
+          <button onClick={toggleMenu} className="md:hidden p-2">
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </div>
-
-      {/* Мобильное меню */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white z-50 shadow-lg rounded-b-lg border border-blue">
-          <ul className="py-4 px-6 space-y-4  text-[#333333] font-bold ">
-            <li>
-              <Link to={'/'} onClick={toggleMenu}>
-                Главная
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white z-50 shadow-lg rounded-b-lg border-x-2 border-b-2 border-blue">
+          <nav className="py-4 px-6 space-y-4 font-bold">
+            {mainNavLinks.map((link) => (
+              <Link key={link.href} to={link.href} onClick={toggleMenu} className="block hover:text-blue">
+                {link.label}
               </Link>
-            </li>
-            <li>
-              <Link to={'/contacts'} onClick={toggleMenu}>
-                Контакты
-              </Link>
-            </li>
-            <li>
-              <Link to={'/cart'} onClick={toggleMenu}>
-                Корзина
-              </Link>
-            </li>
-            <li>
-              <Link to={'/favorites'} onClick={toggleMenu} className="flex items-center gap-2">
-                <Heart size={16} color="#333333" />
-                Избранное
-              </Link>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  handleProfileClick();
-                  toggleMenu();
-                }}
-                className="flex items-center gap-2 text-blue font-bold"
-              >
-                <UserRound size={16} />
-                {isAuthenticated ? 'Мой профиль' : 'Войти в аккаунт'}
-              </button>
-            </li>
-            <li>
-              <button className={cn(`${isCopied && 'text-blue'}`)} onClick={() => copyToClipBoard(contactPhone)}>
-                {isCopied ? 'Copied!' : contactPhone}
-              </button>
-            </li>
-            {/* Кнопка входа в админку в мобильном меню */}
-            {!isAdminAuthenticated && (
-              <li>
-                <Link to="/admin/login" onClick={toggleMenu} className="flex items-center gap-2 text-blue font-bold">
-                  <Shield size={16} />
-                  Вход в админку
-                </Link>
-              </li>
-            )}
-          </ul>
+            ))}
+            <Link to={'/favorites'} onClick={toggleMenu} className="flex items-center gap-2 hover:text-blue">
+              <Heart size={18} /> Избранное
+            </Link>
+            <Link to={'/cart'} onClick={toggleMenu} className="flex items-center gap-2 hover:text-blue">
+              <ShoppingBag size={18} /> Корзина
+            </Link>
+            <hr />
+            <button onClick={() => copy(contactPhone)} className={cn('hover:text-blue', { 'text-blue': isCopied })}>
+              {isCopied ? 'Скопировано!' : contactPhone}
+            </button>
+            <hr />
+            <ProfileActions />
+            <Link to="/admin/login" onClick={toggleMenu} className="flex items-center gap-2 text-blue font-bold">
+              <Shield size={16} />
+              Вход в админку
+            </Link>
+          </nav>
         </div>
       )}
 
-      <div className="bg-blue py-[16px] rounded-b-[8px]">
-        <div>
-          <ul className="text-white font-semibold uppercase flex flex-wrap items-center justify-center gap-[20px]">
-            <li>
-              <Link to={'/catalog'}>SUP</Link>
-            </li>
-            <li>
-              <Link to={'/catalog'}>Комплектующие</Link>
-            </li>
-            <li>
-              <Link to={'/catalog'}>Аренда</Link>
-            </li>
-            <li>
-              <Link to={'/catalog'}>Товары для туризма и отдыха</Link>
-            </li>
+      <div className="bg-blue py-4 rounded-b-lg">
+        <nav>
+          <ul className="text-white font-semibold uppercase flex flex-wrap items-center justify-center gap-x-8 gap-y-2 px-4">
+            {categoryLinks.map((link) => (
+              <li key={link.href}>
+                <Link to={link.href} className="hover:opacity-80 transition-opacity">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
-        </div>
+        </nav>
       </div>
-    </div>
+    </header>
   );
 };

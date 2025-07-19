@@ -1,38 +1,49 @@
 import { supabase } from '../supabase';
-import { Product } from '../types';
+
 
 // Получение всех товаров
-export const getAllProducts = async (): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select(`
-        *,
-        categories (
-          name
-        )
-      `)
-      .order('id', { ascending: true });
+export const getAllProducts = async (filters: { category?: string; sort?: string; q?: string }) => {
+  let query = supabase
+    .from('moysklad_products' as never)
+    .select('*');
 
-    if (error) throw error;
-
-    return data.map((product) => ({
-      id: product.id,
-      name: product.name,
-      brand: product.brand,
-      price: `${product.price} ₽`,
-      priceValue: product.price,
-      image: product.image,
-      category: product.categories?.name || 'Без категории',
-      inStock: product.in_stock,
-      description: product.description || '',
-    }));
-  } catch (error) {
-    console.error('Ошибка при загрузке товаров:', error);
-    throw error;
+  // Применяем фильтр по категории
+  if (filters.category) {
+    query = query.ilike('path_name', `%${filters.category}%`);
   }
+
+  // Применяем фильтр по поисковому запросу
+  if (filters.q) {
+    query = query.ilike('name', `%${filters.q}%`);
+  }
+
+  // Применяем сортировку
+  if (filters.sort === 'asc') {
+    query = query.order('sale_price', { ascending: true });
+  } else if (filters.sort === 'desc') {
+    query = query.order('sale_price', { ascending: false });
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw new Error(error.message);
+  
+  return data || [];
 };
 
+
+export const getNewProducts = async () => {
+    const { data, error } = await supabase
+        .from("moysklad_products" as never)
+        .select("*")
+        .order('updated', { ascending: false }) // Предположим, новые - это последние обновленные
+        .limit(5);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+    return data || [];
+};
 // Получение товара по ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {

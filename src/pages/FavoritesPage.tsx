@@ -1,17 +1,15 @@
 import React from 'react';
 import { useFavorites } from '../lib/context/FavoritesContext';
-import { useCart } from '../lib/context/CartContext';
 import { SectionWrapper } from '../components/ui/SectionWrapper';
-import { ChevronRight, SlidersHorizontal, Heart, ShoppingCart, ArrowLeft, Frown } from 'lucide-react';
+import { Heart, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
-import { Product } from '../lib/types';
 import { Breadcrumbs } from '../lib/utils/BreadCrumbs';
-import { NewProductCard } from '../components/ProductCard/NewProductCard';
+import { ProductCard } from '../components/ProductCard/ProductCard';
+
 
 export const FavoritesPage: React.FC = () => {
-  const { favorites, removeFromFavorites } = useFavorites();
-  const { addToCart } = useCart();
+  const { favorites } = useFavorites();
 
   if (favorites.length === 0) {
     return (
@@ -37,22 +35,17 @@ export const FavoritesPage: React.FC = () => {
 
   return (
     <SectionWrapper title="Избранное" className="px-4 lg:px-8">
-      {/* Хлебные крошки */}
-      <Breadcrumbs/>
+      <Breadcrumbs />
 
-      {/* Основное содержимое */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {favorites.map((product) => (
-          <NewProductCard product={product}/>
+          <ProductCard product={product} />
         ))}
       </div>
 
       <div className="mt-8 flex justify-center">
         <Link to="/catalog">
-          <Button
-            variant="outline"
-            className="border-blue flex items-center gap-2"
-          >
+          <Button variant="outline" className="border-blue flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
             Вернуться в каталог
           </Button>

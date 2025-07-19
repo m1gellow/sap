@@ -1,5 +1,6 @@
 import cn from 'classnames';
-import { patterns } from '../../assets/patterns';
+import { CardBgBig, CardBgSm } from '../../assets/patterns';
+
 
 type InfoCardType = 'small' | 'normal';
 
@@ -13,7 +14,7 @@ interface InfoCardProps {
 }
 
 export const InfoCard = ({ size = 'normal', button, title, img, description, badgeDate }: InfoCardProps) => {
-  const backgroundImage = size === 'small' ? patterns.cardBgSm : patterns.cardBgBig;
+  const backgroundImage = size === 'small' ? CardBgSm : CardBgBig;
 
   return (
     <div
@@ -77,6 +78,8 @@ export const InfoCard = ({ size = 'normal', button, title, img, description, bad
           )}
         >
           <img
+            loading='lazy'
+            decoding='async'
             src={img}
             alt={title}
             className={cn(

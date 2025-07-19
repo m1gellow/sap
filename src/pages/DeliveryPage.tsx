@@ -3,14 +3,14 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../lib/context/CartContext';
 import { useSettings } from '../lib/context/SettingsContext';
 import { useProfile } from '../lib/context/ProfileContext';
 import { useAuth } from '../lib/context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { icons } from '../assets/icons';
 import { Breadcrumbs } from '../lib/utils/BreadCrumbs';
+import { MasterCard, Spb, Visa } from '../assets/icons';
 
 const DeliveryPage = () => {
   const { clearCart, totalPrice, cartItems } = useCart();
@@ -363,11 +363,11 @@ const DeliveryPage = () => {
               >
                 {method.id === 'card' && (
                   <div className="flex items-center">
-                    <img src={icons.visa} alt="Visa" className="h-8" />
-                    <img src={icons.mastercard} alt="Mastercard" className="h-8 ml-2" />
+                    <img src={Visa} alt="Visa" className="h-8" />
+                    <img src={MasterCard} alt="Mastercard" className="h-8 ml-2" />
                   </div>
                 )}
-                {method.id === 'sbp' && <img src={icons.spb} alt="СБП" className="h-8" />}
+                {method.id === 'sbp' && <img src={Spb} alt="СБП" className="h-8" />}
                 {method.id === 'cash' && <span className="font-medium">{method.name}</span>}
                 {paymentMethod === method.id && <CheckIcon className="ml-2 h-4 w-4 text-blue" />}
               </button>

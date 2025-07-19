@@ -5,10 +5,14 @@ import { FavoritesProvider } from '../lib/context/FavoritesContext';
 import { FilterProvider } from '../lib/context/FilterContext';
 import { ProfileProvider } from '../lib/context/ProfileContext';
 import { SettingsProvider } from '../lib/context/SettingsContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export const GlobalProviders = ({ children }: { children: React.ReactNode }) => {
   return (
-    <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <SettingsProvider>
           <CartProvider>
             <FavoritesProvider>
@@ -20,6 +24,7 @@ export const GlobalProviders = ({ children }: { children: React.ReactNode }) => 
             </FavoritesProvider>
           </CartProvider>
         </SettingsProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };

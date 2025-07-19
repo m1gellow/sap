@@ -1,5 +1,4 @@
-import { exoprtAssetsFunc } from "../../lib/utils/exportAssetsFunc"
+export {default as MasterCard} from './mastercard.png';
+export {default as Spb} from './spb.png';
+export {default as Visa} from './visa.png';
 
-const images = import.meta.glob('./*.png', {eager: true}) as Record<string, {default: string}>
-
-export const icons = exoprtAssetsFunc({ images, ext: "png" });

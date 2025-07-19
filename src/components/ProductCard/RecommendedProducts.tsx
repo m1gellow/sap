@@ -2,10 +2,10 @@ import React, { useCallback, useRef, memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../../lib/context/CartContext';
 import { useFavorites } from '../../lib/context/FavoritesContext';
-import {  ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../../lib/types';
 import { AddedToCartModal } from './AddedToCartModal';
-import { NewProductCard } from './NewProductCard';
+import { Productcard } from './ProductCard';
 
 interface RecommendedProductsProps {
   title?: string;
@@ -73,21 +73,13 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = memo(
           }}
         >
           {products.map((product) => (
-           <NewProductCard
-           key={product.id}
-            product={product}
-            isLarge={false}
-           />
+            <Productcard key={product.id} product={product} isLarge={false} />
           ))}
         </div>
 
         {/* Модальное окно добавления в корзину */}
         {showModal && modalProduct && (
-          <AddedToCartModal
-            product={modalProduct}
-            isOpen={showModal}
-            onClose={() => setShowModal(false)}
-          />
+          <AddedToCartModal product={modalProduct} isOpen={showModal} onClose={() => setShowModal(false)} />
         )}
       </div>
     );

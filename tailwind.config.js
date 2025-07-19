@@ -1,12 +1,6 @@
 module.exports = {
   content: ['./src/**/*.{html,js,ts,jsx,tsx}', 'app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
   theme: {
-    screens: {
-      "sm": "640px",
-      "md": "768px",
-      "lg": "1024px",
-      "xl": "1280px"
-    },
     extend: {
       colors: {
         blue: 'var(--blue)',
@@ -17,22 +11,19 @@ module.exports = {
         'gray-3': 'var(--gray-3)',
         'gray-4': 'var(--gray-4)',
         'gray-5': 'var(--gray-5)',
-        grey: 'var(--grey)',
-        'grey-1': 'var(--grey-1)',
+        gray: 'var(--gray)',
         white: 'var(--white)',
         border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'var(--blue)',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
       },
+
       boxShadow: {
         'shadow-black': 'var(--shadow-black)',
         'shadow-blue': 'var(--shadow-blue)',
+      },
+      fontSize: {
+        'nav-link': ['1rem', {fontWeight: "700", letterSpacing: '0.025em'}]
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -40,15 +31,7 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: [
-          'ui-sans-serif',
-          'system-ui',
-          'sans-serif',
-          '"Apple Color Emoji"',
-          '"Segoe UI Emoji"',
-          '"Segoe UI Symbol"',
-          '"Noto Color Emoji"',
-        ],
+         sans: ['"Nunito Sans"', ...require('tailwindcss/defaultTheme').fontFamily.sans],
       },
       keyframes: {
         'accordion-down': {
@@ -65,7 +48,21 @@ module.exports = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
-    container: { center: true, padding: '2rem', screens: { '2xl': '1400px' } },
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1.5rem",
+        lg: "2rem"
+      }
+    },
+      screens: {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px",
+    },
   },
   plugins: [],
   darkMode: ['class'],
