@@ -5,6 +5,9 @@ import { FooterSection } from '../sections/FooterSection';
 import { ProfileModal } from '../components/Profile/ProfileModal';
 import { LoginModal } from '../components/Profile/LoginModal';
 import { useProfile } from '../lib/context/ProfileContext';
+import { DeliveryInfoPage } from '../pages/DeliveryInfoPage';
+import { BlogPage } from '../pages/BlogPage';
+import { ArticlePage } from '../pages/ArticlePage';
 
 const HomePage = lazy(() => import('../pages/HomePage').then((m) => ({ default: m.HomePage })));
 const CatalogPage = lazy(() => import('../pages/CatalogPage').then((m) => ({ default: m.CatalogPage })));
@@ -12,7 +15,7 @@ const ContactsPage = lazy(() => import('../pages/ContactsPage').then((m) => ({ d
 const CartPage = lazy(() => import('../pages/CartPage').then((m) => ({ default: m.CartPage })));
 const FavoritesPage = lazy(() => import('../pages/FavoritesPage').then((m) => ({ default: m.FavoritesPage })));
 const ProductPage = lazy(() => import('../pages/ProductPage').then((m) => ({ default: m.ProductPage })));
-const DeliveryPage = lazy(() => import('../pages/DeliveryPage'));
+const DeliveryPage = lazy(() => import('../pages/DeliveryPage').then((m) => ({ default: m.CheckoutPage })));
 const OrderSuccess = lazy(() => import('../pages/OrderSucess').then((m) => ({ default: m.OrderSuccess })));
 const AdminLogin = lazy(() => import('../pages/Admin/Login/AdminLogin').then((m) => ({ default: m.AdminLogin })));
 const AdminLayout = lazy(() => import('../pages/Admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
@@ -39,6 +42,9 @@ export const AppRouter = () => {
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Загрузка...</div>}>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/delivery-info" element={<DeliveryInfoPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<ArticlePage  />} />
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/contacts" element={<ContactsPage />} />
             <Route path="/cart" element={<CartPage />} />

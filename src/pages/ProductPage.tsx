@@ -30,7 +30,7 @@ interface ParsedDescription {
 const SpecBadge: React.FC<SpecBadgeProps> = ({ text, active = false }) => (
   <button
     className={`border rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-      active ? 'bg-gray-800 text-white border-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+      active ? 'bg-gray text-white border-gray' : 'border-gray text-gray hover:bg-gray'
     }`}
   >
     {text}
@@ -38,9 +38,9 @@ const SpecBadge: React.FC<SpecBadgeProps> = ({ text, active = false }) => (
 );
 
 const SpecDetailRow: React.FC<SpecDetailRowProps> = ({ label, value }) => (
-  <div className="flex justify-between items-baseline pt-3 pb-3 border-b border-gray-200">
-    <span className="text-gray-500">{label}</span>
-    <span className="font-semibold text-gray-800 text-right">{value}</span>
+  <div className="flex justify-between items-baseline pt-3 pb-3 border-b borde-gray">
+    <span className="text-gray">{label}</span>
+    <span className="font-semibold text-gray text-right">{value}</span>
   </div>
 );
 

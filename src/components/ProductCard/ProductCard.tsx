@@ -33,6 +33,7 @@ export const ProductCard = ({ product, isLarge = false, className = '' }: NewPro
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
+        <FavoriteToggleButton product={product} />
         <div className={`relative ${isLarge ? 'h-[400px] flex-grow' : 'h-64'} overflow-hidden rounded-lg `}>
           <Link to={`/product/${product?.id}`} className="block h-full">
             <motion.img
@@ -53,8 +54,6 @@ export const ProductCard = ({ product, isLarge = false, className = '' }: NewPro
               Нет в наличии
             </span>
           )}
-
-          <FavoriteToggleButton product={product} />
 
           {isHovered && (
             <motion.div

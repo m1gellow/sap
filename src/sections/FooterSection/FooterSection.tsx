@@ -31,7 +31,7 @@ export const FooterSection = (): JSX.Element => {
   );
 
   return (
-    <footer className="mx-4 sm:mx-6 lg:mx-8 my-6 sm:my-8 lg:my-10 text-white">
+    <footer className="mx-4 sm:mx-6 lg:mx-8 my-6 sm:my-8 lg:my-10 ">
       <div className="bg-skyblue border-2 border-blue rounded-t-lg overflow-hidden">
         <div className="container mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -174,17 +174,17 @@ export const FooterSection = (): JSX.Element => {
       {/* Legal Section */}
       <div className="bg-blue py-3 sm:py-4 rounded-b-lg">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <ul className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm font-semibold uppercase">
-            <li className="hover:text-sky-200 transition-colors">
+          <ul className="flex flex-col sm:flex-row text-white flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm font-semibold uppercase">
+            <li className=" transition-colors">
               ИП Разов А.Д
             </li>
-            <li className="hover:text-sky-200 transition-colors">
+            <li className=" transition-colors">
               ИНН 667104649446
             </li>
             <li>
               <Link 
                 to="/privacy" 
-                className="hover:text-sky-200 transition-colors hover:underline"
+                className=" transition-colors hover:underline"
               >
                 Политика конфиденциальности
               </Link>
