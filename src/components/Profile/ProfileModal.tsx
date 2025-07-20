@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { useProfile } from '../../lib/context/ProfileContext';
-import { XIcon, UserIcon, PhoneIcon, MapPinIcon, MailIcon, Loader2 } from 'lucide-react';
+import { X, User, Phone, MapPin, Mail, Loader2 } from 'lucide-react';
+
+// Using the same Input component style as DeliveryPage for consistency
+const Input = ({ placeholder, type = 'text', value, onChange, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
+  <input
+    type={type}
+    placeholder={placeholder}
+    value={value}
+    onChange={onChange}
+    className="w-full text-black bg-white p-[8px] font-normal text-[16px] rounded-[8px] outline-none border border-gray-300 focus:ring-2 focus:ring-blue"
+    {...props}
+  />
+);
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -28,9 +39,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
         phone: profile.phone || '',
         address: profile.address || '',
       });
+      // Reset edit mode when modal is re-opened or profile changes
+      setEditMode(false);
     }
-  }, [profile]);
+  }, [profile, isOpen]);
 
+  // Early return if no profile to prevent errors
   if (!profile) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,140 +66,149 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     onClose();
   };
 
+  const handleCancel = () => {
+    // Revert changes back to original profile data
+    if (profile) {
+        setFormData({
+            name: profile.name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            address: profile.address || '',
+        });
+    }
+    setEditMode(false);
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden"
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 50, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25 }}
+            className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Шапка профиля */}
-            <div className="relative h-32 bg-gradient-to-r from-blue to-indigo-500">
-              <Button
-                className="absolute right-2 top-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2"
-                onClick={onClose}
-                variant="ghost"
-                size="icon"
-              >
-                <XIcon className="h-5 w-5 text-blue" />
-              </Button>
-
-              <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
-                <div className="w-32 h-32 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center overflow-hidden">
-                  {profile.avatar ? (
-                    <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="h-16 w-16 text-gray-400" />
-                  )}
-                </div>
-              </div>
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray">Профиль</h2>
+                <Button onClick={onClose} variant="ghost" size="icon" className="text-gray-500 hover:bg-gray-100 rounded-full">
+                    <X className="h-5 w-5" />
+                </Button>
             </div>
 
-            {/* Информация профиля */}
-            <div className="pt-20 pb-6 px-6">
-              <h2 className="text-2xl font-semibold text-center text-gray-1">
-                {editMode ? (
-                  <Input
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="text-center font-semibold"
-                  />
-                ) : (
-                  profile.name || 'Пользователь'
-                )}
-              </h2>
-
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center">
-                  <MailIcon className="h-5 w-5 text-blue mr-3" />
-                  <span>{profile.email}</span>
+            {/* Profile Content */}
+            <div className="p-6 space-y-6">
+                {/* Avatar and Name Section */}
+                <div className="flex items-center gap-4">
+                    <div className="w-24 h-24 rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                        {profile.avatar ? (
+                            <img src={profile.avatar} alt={profile.name || 'avatar'} className="w-full h-full object-cover" />
+                        ) : (
+                            <User className="h-12 w-12 text-gray-400" />
+                        )}
+                    </div>
+                    <div className="w-full">
+                        {editMode ? (
+                            <Input
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                placeholder="Ваше имя"
+                            />
+                        ) : (
+                            <h3 className="text-2xl font-bold text-gray-800">{profile.name || 'Пользователь'}</h3>
+                        )}
+                    </div>
                 </div>
 
-                <div className="flex items-center">
-                  <PhoneIcon className="h-5 w-5 text-blue mr-3" />
-                  {editMode ? (
-                    <Input
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="Введите номер телефона"
-                    />
-                  ) : (
-                    <span>{profile.phone || 'Не указан'}</span>
-                  )}
+                {/* Details Section */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4 text-gray">
+                        <Mail className="h-5 w-5 text-blue shrink-0" />
+                        <span className="truncate">{profile.email}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-gray">
+                        <Phone className="h-5 w-5 text-blue shrink-0" />
+                        {editMode ? (
+                            <Input
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                placeholder="Номер телефона"
+                            />
+                        ) : (
+                            <span>{profile.phone || 'Не указан'}</span>
+                        )}
+                    </div>
+                     <div className="flex items-start gap-4 text-gray">
+                        <MapPin className="h-5 w-5 text-blue shrink-0 mt-2" />
+                        {editMode ? (
+                            <Input
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                                placeholder="Адрес доставки"
+                            />
+                        ) : (
+                            <span className="break-words">{profile.address || 'Не указан'}</span>
+                        )}
+                    </div>
                 </div>
-
-                <div className="flex items-center">
-                  <MapPinIcon className="h-5 w-5 text-blue mr-3" />
-                  {editMode ? (
-                    <Input
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      placeholder="Введите адрес"
-                    />
-                  ) : (
-                    <span>{profile.address || 'Не указан'}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-8 flex space-x-3">
-                {editMode ? (
-                  <>
-                    <Button
-                      className="flex-1 bg-blue hover:bg-blue text-skyblue rounded-[53px] flex items-center justify-center"
-                      onClick={handleSave}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
+                
+                {/* Action Buttons */}
+                <div className="pt-2 flex gap-3">
+                    {editMode ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4  animate-spin" />
-                          Сохранение...
+                            <Button
+                                className="flex-1"
+                                onClick={handleSave}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Сохранение...
+                                    </>
+                                ) : (
+                                    'Сохранить'
+                                )}
+                            </Button>
+                            <Button
+                                className="flex-1"
+                                variant="outline"
+                                onClick={handleCancel}
+                                disabled={isLoading}
+                            >
+                                Отмена
+                            </Button>
                         </>
-                      ) : (
-                        'Сохранить'
-                      )}
-                    </Button>
-                    <Button
-                      className="flex-1 border border-gray-300 text-gray-700 rounded-[53px]"
-                      variant="outline"
-                      onClick={() => setEditMode(false)}
-                      disabled={isLoading}
-                    >
-                      Отмена
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      className="flex-1 bg-blue hover:bg-blue text-white rounded-[53px]"
-                      onClick={() => setEditMode(true)}
-                    >
-                      Редактировать
-                    </Button>
-                    <Button
-                      className="flex-1 border border-gray-300 text-gray-700 rounded-[53px]"
-                      variant="outline"
-                      onClick={handleLogout}
-                    >
-                      Выйти
-                    </Button>
-                  </>
-                )}
-              </div>
+                    ) : (
+                        <>
+                            <Button
+                                className="flex-1"
+                                onClick={() => setEditMode(true)}
+                            >
+                                Редактировать
+                            </Button>
+                            <Button
+                                className="flex-1"
+                                variant="outline"
+                                onClick={handleLogout}
+                            >
+                                Выйти
+                            </Button>
+                        </>
+                    )}
+                </div>
             </div>
           </motion.div>
         </motion.div>

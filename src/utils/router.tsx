@@ -15,7 +15,7 @@ const ContactsPage = lazy(() => import('../pages/ContactsPage').then((m) => ({ d
 const CartPage = lazy(() => import('../pages/CartPage').then((m) => ({ default: m.CartPage })));
 const FavoritesPage = lazy(() => import('../pages/FavoritesPage').then((m) => ({ default: m.FavoritesPage })));
 const ProductPage = lazy(() => import('../pages/ProductPage').then((m) => ({ default: m.ProductPage })));
-const DeliveryPage = lazy(() => import('../pages/DeliveryPage').then((m) => ({ default: m.CheckoutPage })));
+const DeliveryPage = lazy(() => import('../pages/DeliveryPage'))
 const OrderSuccess = lazy(() => import('../pages/OrderSucess').then((m) => ({ default: m.OrderSuccess })));
 const AdminLogin = lazy(() => import('../pages/Admin/Login/AdminLogin').then((m) => ({ default: m.AdminLogin })));
 const AdminLayout = lazy(() => import('../pages/Admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));

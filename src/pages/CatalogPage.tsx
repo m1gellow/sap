@@ -156,10 +156,10 @@ export const CatalogPage: React.FC = () => {
           ) : showNoResults ? (
             <>
               <EmptyCategoryMessage resetAllFilters={resetAllFilters} />
-              <ProductGrid title="Возможно, вас заинтересует" isLoading={isLoading} products={products.slice(0, 8)} />
+              <ProductGrid title="Возможно, вас заинтересует" products={products.slice(0, 8)} />
             </>
           ) : (
-            <ProductGrid title="Результаты" isLoading={isLoading} products={displayProducts} />
+            <ProductGrid title="Результаты" products={displayProducts} />
           )}
         </div>
       </div>

@@ -20,7 +20,7 @@ export const ProductsGridLayout = ({ products = [], className = '', isLoading }:
     return (
       <div className={`px-4 lg:px-8 ${className}`}>
         <div className="grid md:grid-cols-2 grid-cols-1 gap-6 md:gap-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 w-full">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={`skeleton-${index}`} className="h-full flex justify-center">
                 <ProductCardSkeleton />
