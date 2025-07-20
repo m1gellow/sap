@@ -15,6 +15,7 @@ import { Button } from '../components/ui/button';
 import VisaIcon from '../assets/icons/visa.png';
 import SpbIcon from '../assets/icons/spb.png';
 import CashIcon from '../assets/icons/cash.png';
+import PickupPointModal from '../components/checkout/CheckOutModal';
 
 const Input = ({ placeholder, type = 'text', value, onChange, ...props }) => (
   <input
@@ -397,7 +398,7 @@ const DeliveryPage = () => {
       });
 
       const newOrder = {
-        user_id: user.id,
+        user_id: user?.id,
         total_amount: finalTotal,
         status: 'Ожидает оплаты',
         customer_name: fullName,
@@ -417,7 +418,7 @@ const DeliveryPage = () => {
         order_id: orderData.id,
         product_id: item.product.id,
         quantity: item.quantity,
-        price: item.product.priceValue,
+        price: item.product.sale_price,
       }));
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
       if (itemsError) throw itemsError;
@@ -449,6 +450,9 @@ const DeliveryPage = () => {
 
   return (
     <div className="bg-white p-4 font-sans">
+      <div className='absolute'>
+          {/* <PickupPointModal isOpen={true} onClose={() => false}/> */}
+      </div>
       <SectionWrapper title="Оформление заказа" className="px-4 lg:px-8">
         <Breadcrumbs />
         <div className="mx-auto flex flex-col gap-[20px]">

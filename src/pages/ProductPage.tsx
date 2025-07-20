@@ -179,6 +179,7 @@ export const ProductPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (product) {
+      // console.log(product)
       addToCart(product, quantity);
       setShowAddedToCart(true);
     }
