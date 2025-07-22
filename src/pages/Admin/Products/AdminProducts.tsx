@@ -13,19 +13,19 @@ import {
 import { ProductFormModal } from './components/ProductFormModal';
 import { ProductsTable } from './components/ProductsTable';
 import { Pagination } from './components/Pagination';
-import { Product } from '../../../lib/types';
+import { MoySkladProduct } from '../../../lib/types';
 import { Category, SortConfig } from '../../../types/types';
 import { DeleteConfirmationModal } from './components/DeleteConfirmationModal';
 import { filterProducts, sortProducts } from '../../../utils/products';
 import { ProductOrderWarningModal } from '../../../components/Admin/ProductOrderWarningModal';
 
 export const AdminProducts = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<MoySkladProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MoySkladProduct | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortConfig>({ field: 'id', direction: 'asc' });
   const [isLoading, setIsLoading] = useState(true);
@@ -33,8 +33,6 @@ export const AdminProducts = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeFilter, setActiveFilter] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Состояние для модального окна предупреждения
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
 
@@ -45,7 +43,10 @@ export const AdminProducts = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const [productsData, categoriesData] = await Promise.all([getAllProducts(), getAllCategories()]);
+        const [productsData, categoriesData] = await Promise.all([
+          getAllProducts({}),
+          getAllCategories()
+        ]);
         setProducts(productsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -59,61 +60,63 @@ export const AdminProducts = () => {
     fetchData();
   }, []);
 
-  const filteredProducts = sortProducts(filterProducts(products, searchTerm, selectedCategory), sortBy);
+  const filteredProducts = sortProducts(
+    filterProducts(products, searchTerm, selectedCategory), 
+    sortBy
+  );
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (product: MoySkladProduct) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
 
   const handleNewProduct = () => {
     setSelectedProduct({
-      id: 0,
+      id: '',
       name: '',
-      brand: '',
-      price: '',
-      priceValue: 0,
-      image: '',
-      category: '',
-      inStock: true,
       description: '',
+      archived: false,
+      path_name: '',
+      sale_price: null,
+      article: '',
+      weight: null,
+      image_url: '',
+      stock: 0,
+      reserve: 0,
+      in_transit: 0
     });
     setIsModalOpen(true);
   };
 
-  const handleDeleteProduct = (product: Product) => {
+  const handleDeleteProduct = (product: MoySkladProduct) => {
     setSelectedProduct(product);
     setIsDeleteModalOpen(true);
   };
 
-  // Функция сохранения товара
-  const handleSaveProduct = async (formData: Product) => {
+  const handleSaveProduct = async (formData: MoySkladProduct) => {
     setIsOperationLoading(true);
     setError(null);
 
     try {
-      let savedProduct: Product;
+      let savedProduct: MoySkladProduct;
 
-      if (formData.id && formData.id > 0) {
+      if (formData.id) {
         // Обновляем существующий товар
         savedProduct = await updateProduct(formData.id, formData);
-
-        // Обновляем товар в локальном состоянии
-        setProducts((prevProducts) =>
-          prevProducts.map((product) => (product.id === formData.id ? savedProduct : product)),
+        setProducts(prevProducts =>
+          prevProducts.map(product => 
+            product.id === formData.id ? savedProduct : product
+          )
         );
       } else {
         // Создаем новый товар
-        const { id, ...productDataWithoutId } = formData;
-        savedProduct = await createProduct(productDataWithoutId);
-
-        // Добавляем новый товар в локальное состояние
-        setProducts((prevProducts) => [...prevProducts, savedProduct]);
+        savedProduct = await createProduct(formData);
+        setProducts(prevProducts => [...prevProducts, savedProduct]);
       }
 
       setIsModalOpen(false);
@@ -126,7 +129,6 @@ export const AdminProducts = () => {
     }
   };
 
-  // Функция подтверждения удаления
   const confirmDelete = async () => {
     if (!selectedProduct) return;
 
@@ -136,15 +138,13 @@ export const AdminProducts = () => {
 
     try {
       await deleteProduct(selectedProduct.id);
-
-      // Удаляем товар из локального состояния
-      setProducts((prevProducts) => prevProducts.filter((product) => product.id !== selectedProduct.id));
-
+      setProducts(prevProducts => 
+        prevProducts.filter(product => product.id !== selectedProduct.id)
+      );
       setIsDeleteModalOpen(false);
       setSelectedProduct(null);
     } catch (error: any) {
       console.error('Ошибка при удалении товара:', error);
-      // Отображаем модальное окно предупреждения с конкретным сообщением об ошибке
       setWarningMessage(error.message || 'Не удалось удалить товар. Произошла неизвестная ошибка.');
       setShowWarningModal(true);
     } finally {
@@ -153,7 +153,7 @@ export const AdminProducts = () => {
   };
 
   const handleSortChange = (field: string) => {
-    setSortBy((prev) => ({
+    setSortBy(prev => ({
       field,
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc',
     }));
@@ -171,7 +171,10 @@ export const AdminProducts = () => {
       <div className="space-y-6">
         <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-md">
           <p>{error}</p>
-          <button onClick={() => window.location.reload()} className="mt-2 text-sm underline hover:no-underline">
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-2 text-sm underline hover:no-underline"
+          >
             Обновить страницу
           </button>
         </div>
@@ -206,7 +209,7 @@ export const AdminProducts = () => {
               <Search size={18} className="text-gray-400" />
             </div>
             <Input
-              placeholder="Поиск по названию, бренду или ID..."
+              placeholder="Поиск по названию, артикулу или ID..."
               className="pl-10 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -261,8 +264,9 @@ export const AdminProducts = () => {
                 >
                   <option value="id">ID</option>
                   <option value="name">Название</option>
-                  <option value="brand">Бренд</option>
-                  <option value="price">Цена</option>
+                  <option value="article">Артикул</option>
+                  <option value="sale_price">Цена</option>
+                  <option value="stock">Остаток</option>
                 </select>
               </div>
               <div>
@@ -280,12 +284,15 @@ export const AdminProducts = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
                 <select
                   className="w-full rounded-lg border border-gray-300 py-2 px-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
-                  value="all"
-                  onChange={() => {}}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedCategory(value === 'all' ? 'all' : value);
+                  }}
+                  value={selectedCategory === 'all' ? 'all' : selectedCategory}
                 >
                   <option value="all">Все статусы</option>
-                  <option value="inStock">В наличии</option>
-                  <option value="outOfStock">Нет в наличии</option>
+                  <option value="archived">Архивированные</option>
+                  <option value="active">Активные</option>
                 </select>
               </div>
             </div>
@@ -304,7 +311,11 @@ export const AdminProducts = () => {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <ProductsTable products={currentProducts} onEdit={handleEditProduct} onDelete={handleDeleteProduct} />
+              <ProductsTable 
+                products={currentProducts} 
+                onEdit={handleEditProduct} 
+                onDelete={handleDeleteProduct} 
+              />
             </div>
 
             {filteredProducts.length > 0 && (

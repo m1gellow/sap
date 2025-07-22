@@ -1,6 +1,6 @@
 import cn from 'classnames';
 import { CardBgBig, CardBgSm } from '../../assets/patterns';
-
+import MainButton from './MainButton';
 
 type InfoCardType = 'small' | 'normal';
 
@@ -24,7 +24,7 @@ export const InfoCard = ({ size = 'normal', button, title, img, description, bad
         size === 'small' ? 'min-h-[260px]' : 'min-h-[400px]',
         {
           'md:flex-row md:h-full': img, // Горизонтальное расположение только если есть изображение
-        }
+        },
       )}
       style={{
         backgroundImage: `url(${backgroundImage})`,
@@ -41,29 +41,17 @@ export const InfoCard = ({ size = 'normal', button, title, img, description, bad
             'md:w-1/2': img, // Половина ширины только если есть изображение
             'w-full': !img, // Полная ширина если нет изображения
           },
-          size === 'small' ? 'md:min-h-[260px]' : 'md:min-h-[560px]'
+          size === 'small' ? 'md:min-h-[260px]' : 'md:min-h-[560px]',
         )}
       >
         <div className="flex flex-col gap-[20px]">
           {badgeDate && (
-            <button className="bg-blue font-bold text-white w-max gap-[10px] p-[5px] rounded-[4px]">
-              {badgeDate}
-            </button>
+            <button className="bg-blue font-bold text-white w-max gap-[10px] p-[5px] rounded-[4px]">{badgeDate}</button>
           )}
 
-          <h1 className="font-bold text-blue text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 md:mb-4">
-            {title}
-          </h1>
-          {description && (
-            <p className="font-medium text-gray-800 text-[20px] sm:text-lg md:text-xl">
-              {description}
-            </p>
-          )}
-          {button && (
-            <button className="bg-blue text-white text-[16px] font-bold px-[79.5px] py-[13px] rounded-full">
-              Подписаться
-            </button>
-          )}
+          <h1 className="font-bold text-blue text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-3 md:mb-4">{title}</h1>
+          {description && <p className="font-medium text-gray-800 text-[20px] sm:text-lg md:text-xl">{description}</p>}
+          {button && <MainButton size="lg">Подписаться</MainButton>}
         </div>
       </div>
 
@@ -74,19 +62,19 @@ export const InfoCard = ({ size = 'normal', button, title, img, description, bad
             'relative flex-1',
             'min-h-[200px] md:min-h-0',
             'flex items-center justify-center',
-            'bg-gray-100 bg-opacity-50'
+            'bg-gray-100 bg-opacity-50',
           )}
         >
           <img
-            loading='lazy'
-            decoding='async'
+            loading="lazy"
+            decoding="async"
             src={img}
             alt={title}
             className={cn(
               'w-full h-full object-contain',
               'md:absolute md:inset-0',
               'transition-transform duration-300 hover:scale-105',
-              size === 'small' ? 'md:object-left' : 'md:object-center'
+              size === 'small' ? 'md:object-left' : 'md:object-center',
             )}
           />
         </div>

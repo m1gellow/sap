@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
-import { Button } from '../ui/button';
+import MainButton from '../ui/MainButton';
 
 interface AdminWarningModalProps {
   isOpen: boolean;
@@ -44,12 +44,12 @@ export const AdminWarningModal: React.FC<AdminWarningModalProps> = ({
           <p className="text-gray-600 mb-6">{message}</p>
           
           <div className="flex justify-end">
-            <Button 
+            <MainButton 
               onClick={onClose}
               className="bg-blue text-white"
             >
               Понятно
-            </Button>
+            </MainButton>
           </div>
         </div>
       </motion.div>

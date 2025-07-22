@@ -1,6 +1,7 @@
+import { MoySkladProduct } from '../../types/types';
 import { supabase } from '../supabase';
 
-// Получение статистики для дашборда
+// Получение статистики для админ-панели
 export const getAdminDashboardStats = async () => {
   try {
     // Получаем заказы за сегодня
@@ -20,11 +21,12 @@ export const getAdminDashboardStats = async () => {
     const newOrdersToday = ordersToday?.length || 0;
     const revenueToday = ordersToday?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
-    // Получаем товары с низким остатком (для примера, считаем что все товары в наличии)
+    // Получаем товары с низким остатком
     const { data: lowStockItems, error: stockError } = await supabase
-      .from('products')
-      .select('id, name')
-      .eq('in_stock', false)
+      .from('moysklad_products')
+      .select('id, name, stock')
+      .lte('stock', 2)
+      .eq('archived', false)
       .limit(5);
 
     if (stockError) throw stockError;
@@ -43,14 +45,17 @@ export const getAdminDashboardStats = async () => {
       customer: order.customer_name,
       date: new Date(order.created_at).toLocaleDateString('ru-RU'),
       status: order.status,
-      amount: `${Number(order.total_amount).toLocaleString()} ₽`,
+      amount: `${Number(order.total_amount).toLocaleString('ru-RU')} ₽`,
     })) || [];
 
     return {
       newOrdersToday,
       revenueToday,
-      visitors: 3456, // Заглушка для посетителей
-      lowStockItems: lowStockItems?.map(item => ({ name: item.name, stock: 0 })) || [],
+      visitors: 3456,
+      lowStockItems: lowStockItems?.map(item => ({ 
+        name: item.name, 
+        stock: item.stock 
+      })) || [],
       recentOrders: formattedRecentOrders,
       error: null,
     };
@@ -67,7 +72,7 @@ export const getAdminDashboardStats = async () => {
   }
 };
 
-// Получение всех заказов для админ-панели
+// Получение списка заказов
 export const getAdminOrders = async () => {
   try {
     const { data, error } = await supabase
@@ -78,10 +83,10 @@ export const getAdminOrders = async () => {
           id,
           quantity,
           price,
-          products (
+          moysklad_products (
             id,
             name,
-            image
+            image_url
           )
         )
       `)
@@ -94,17 +99,19 @@ export const getAdminOrders = async () => {
       customer: order.customer_name,
       email: order.customer_email,
       phone: order.customer_phone,
-      date: order.created_at,
+      date: new Date(order.created_at).toLocaleDateString('ru-RU'),
       status: order.status,
       amount: Number(order.total_amount),
       address: order.delivery_address,
       paymentMethod: order.payment_method,
       notes: order.notes,
       items: order.order_items?.map(item => ({
-        name: item.products?.name || 'Неизвестный товар',
+        id: item.id,
+        name: item.moysklad_products?.name || 'Неизвестный товар',
         quantity: item.quantity,
         price: Number(item.price),
-        image: item.products?.image || null
+        image: item.moysklad_products?.image_url || null,
+        productId: item.moysklad_products?.id || null
       })) || [],
     })) || [];
 
@@ -134,7 +141,91 @@ export const updateOrderStatus = async (orderId: string, newStatus: string) => {
   }
 };
 
-// Получение всех пользователей для админ-панели
+// Получение списка товаров
+export const getAdminProducts = async (params?: {
+  search?: string;
+  archived?: boolean;
+  minStock?: number;
+}) => {
+  try {
+    let query = supabase
+      .from('moysklad_products')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (params?.search) {
+      query = query.ilike('name', `%${params.search}%`);
+    }
+
+    if (params?.archived !== undefined) {
+      query = query.eq('archived', params.archived);
+    } else {
+      query = query.eq('archived', false);
+    }
+
+    if (params?.minStock !== undefined) {
+      query = query.gte('stock', params.minStock);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    const formattedProducts: MoySkladProduct[] = data?.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      archived: product.archived,
+      path_name: product.path_name,
+      sale_price: product.sale_price ? Number(product.sale_price) : null,
+      article: product.article,
+      weight: product.weight ? Number(product.weight) : null,
+      image_url: product.image_url,
+      stock: product.stock,
+      reserve: product.reserve,
+      in_transit: product.in_transit,
+      created_at: product.created_at
+    })) || [];
+
+    return { products: formattedProducts, error: null };
+  } catch (error) {
+    console.error('Ошибка при получении товаров:', error);
+    return { products: [], error };
+  }
+};
+
+// Обновление товара
+export const updateAdminProduct = async (
+  productId: string, 
+  productData: Partial<MoySkladProduct>
+) => {
+  try {
+    // Преобразуем числовые поля
+    const updateData: any = {
+      ...productData,
+      sale_price: productData.sale_price !== undefined 
+        ? productData.sale_price?.toString() 
+        : undefined,
+      weight: productData.weight !== undefined 
+        ? productData.weight?.toString() 
+        : undefined
+    };
+
+    const { error } = await supabase
+      .from('moysklad_products')
+      .update(updateData)
+      .eq('id', productId);
+
+    if (error) throw error;
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Ошибка при обновлении товара:', error);
+    return { success: false, error };
+  }
+};
+
+// Получение списка пользователей
 export const getAdminUsers = async () => {
   try {
     const { data, error } = await supabase
@@ -150,7 +241,7 @@ export const getAdminUsers = async () => {
       email: user.email,
       role: user.role || 'customer',
       status: user.status || 'active',
-      lastLogin: user.created_at, // Используем дату создания как заглушку для последнего входа
+      lastLogin: user.last_login_at || user.created_at,
     })) || [];
 
     return { users: formattedUsers, error: null };
@@ -160,7 +251,7 @@ export const getAdminUsers = async () => {
   }
 };
 
-// Создание нового пользователя (только для админов)
+// Создание пользователя
 export const createAdminUser = async (userData: {
   name: string;
   email: string;
@@ -169,7 +260,6 @@ export const createAdminUser = async (userData: {
   status: string;
 }) => {
   try {
-    // Создаем пользователя через auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
@@ -178,7 +268,6 @@ export const createAdminUser = async (userData: {
     if (authError) throw authError;
     if (!authData.user) throw new Error('Не удалось создать пользователя');
 
-    // Создаем профиль пользователя
     const { error: profileError } = await supabase.from('user_profiles').insert({
       id: authData.user.id,
       name: userData.name,
@@ -189,7 +278,6 @@ export const createAdminUser = async (userData: {
 
     if (profileError) throw profileError;
 
-    // Если роль администратор или менеджер, добавляем в таблицу admins
     if (userData.role === 'admin' || userData.role === 'manager') {
       const { error: adminError } = await supabase.from('admins').insert({
         id: authData.user.id,
@@ -198,10 +286,7 @@ export const createAdminUser = async (userData: {
         role: userData.role,
       });
 
-      if (adminError) {
-        console.error('Ошибка при создании записи администратора:', adminError);
-        // Не бросаем ошибку, так как основной профиль создан успешно
-      }
+      if (adminError) console.error('Ошибка при создании записи администратора:', adminError);
     }
 
     return { user: authData.user, error: null };
@@ -212,14 +297,16 @@ export const createAdminUser = async (userData: {
 };
 
 // Обновление пользователя
-export const updateAdminUser = async (userId: string, userData: {
-  name?: string;
-  email?: string;
-  role?: string;
-  status?: string;
-}) => {
+export const updateAdminUser = async (
+  userId: string, 
+  userData: {
+    name?: string;
+    email?: string;
+    role?: string;
+    status?: string;
+  }
+) => {
   try {
-    // Получаем текущие данные пользователя
     const { data: currentUser, error: getCurrentError } = await supabase
       .from('user_profiles')
       .select('role')
@@ -228,7 +315,6 @@ export const updateAdminUser = async (userId: string, userData: {
 
     if (getCurrentError) throw getCurrentError;
 
-    // Обновляем профиль пользователя
     const { error: updateError } = await supabase
       .from('user_profiles')
       .update(userData)
@@ -236,46 +322,31 @@ export const updateAdminUser = async (userId: string, userData: {
 
     if (updateError) throw updateError;
 
-    // Управляем записью в таблице admins
     if (userData.role) {
       const currentRole = currentUser?.role;
       const newRole = userData.role;
 
-      if ((newRole === 'admin' || newRole === 'manager') && (currentRole !== 'admin' && currentRole !== 'manager')) {
-        // Добавляем в admins, если новая роль admin/manager, а старая была customer
-        const { error: adminInsertError } = await supabase.from('admins').upsert({
+      // Логика управления таблицей admins
+      if ((newRole === 'admin' || newRole === 'manager') && 
+          (currentRole !== 'admin' && currentRole !== 'manager')) {
+        await supabase.from('admins').upsert({
           id: userId,
           username: userData.email?.split('@')[0] || `user_${userId.slice(0, 8)}`,
           name: userData.name || 'Администратор',
           role: newRole,
         });
-
-        if (adminInsertError) {
-          console.error('Ошибка при добавлении в admins:', adminInsertError);
-        }
-      } else if (newRole === 'customer' && (currentRole === 'admin' || currentRole === 'manager')) {
-        // Удаляем из admins, если новая роль customer, а старая была admin/manager
-        const { error: adminDeleteError } = await supabase
-          .from('admins')
-          .delete()
-          .eq('id', userId);
-
-        if (adminDeleteError) {
-          console.error('Ошибка при удалении из admins:', adminDeleteError);
-        }
-      } else if ((newRole === 'admin' || newRole === 'manager') && (currentRole === 'admin' || currentRole === 'manager')) {
-        // Обновляем роль в admins, если и старая, и новая роли admin/manager
-        const { error: adminUpdateError } = await supabase
+      } else if (newRole === 'customer' && 
+                (currentRole === 'admin' || currentRole === 'manager')) {
+        await supabase.from('admins').delete().eq('id', userId);
+      } else if ((newRole === 'admin' || newRole === 'manager') && 
+                (currentRole === 'admin' || currentRole === 'manager')) {
+        await supabase
           .from('admins')
           .update({
             role: newRole,
             name: userData.name || 'Администратор',
           })
           .eq('id', userId);
-
-        if (adminUpdateError) {
-          console.error('Ошибка при обновлении роли в admins:', adminUpdateError);
-        }
       }
     }
 
@@ -286,10 +357,9 @@ export const updateAdminUser = async (userId: string, userData: {
   }
 };
 
-// "Мягкое" удаление пользователя (деактивация)
+// Деактивация пользователя
 export const deactivateAdminUser = async (userId: string) => {
   try {
-    // Обновляем статус пользователя на неактивный и роль на customer
     const { error: updateError } = await supabase
       .from('user_profiles')
       .update({
@@ -300,20 +370,45 @@ export const deactivateAdminUser = async (userId: string) => {
 
     if (updateError) throw updateError;
 
-    // Удаляем из таблицы admins, если пользователь там есть
-    const { error: adminDeleteError } = await supabase
-      .from('admins')
-      .delete()
-      .eq('id', userId);
-
-    // Игнорируем ошибку, если записи в admins не было
-    if (adminDeleteError && !adminDeleteError.message.includes('No rows found')) {
-      console.error('Ошибка при удалении из admins:', adminDeleteError);
-    }
+    await supabase.from('admins').delete().eq('id', userId);
 
     return { success: true, error: null };
   } catch (error) {
     console.error('Ошибка при деактивации пользователя:', error);
     return { success: false, error };
+  }
+};
+
+// Получение данных одного товара
+export const getAdminProduct = async (productId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('moysklad_products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (error) throw error;
+
+    const product: MoySkladProduct = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      archived: data.archived,
+      path_name: data.path_name,
+      sale_price: data.sale_price ? Number(data.sale_price) : null,
+      article: data.article,
+      weight: data.weight ? Number(data.weight) : null,
+      image_url: data.image_url,
+      stock: data.stock,
+      reserve: data.reserve,
+      in_transit: data.in_transit,
+      created_at: data.created_at
+    };
+
+    return { product, error: null };
+  } catch (error) {
+    console.error('Ошибка при получении товара:', error);
+    return { product: null, error };
   }
 };

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { useProfile } from '../../lib/context/ProfileContext';
 import { X, User, Phone, MapPin, Mail, Loader2 } from 'lucide-react';
+import MainButton from '../ui/MainButton';
 
 // Using the same Input component style as DeliveryPage for consistency
 const Input = ({ placeholder, type = 'text', value, onChange, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -83,14 +84,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50  flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden"
+            className="bg-skyblue  border-[2px] border-blue rounded-xl shadow-2xl max-w-md w-full overflow-hidden z-50"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -193,19 +194,18 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                         </>
                     ) : (
                         <>
-                            <Button
-                                className="flex-1"
+                            <MainButton
+                                variant='secondary'
                                 onClick={() => setEditMode(true)}
                             >
                                 Редактировать
-                            </Button>
-                            <Button
-                                className="flex-1"
-                                variant="outline"
-                                onClick={handleLogout}
+                            </MainButton>
+                              <MainButton
+                                variant='outline'
+                               onClick={handleLogout}
                             >
                                 Выйти
-                            </Button>
+                            </MainButton>
                         </>
                     )}
                 </div>

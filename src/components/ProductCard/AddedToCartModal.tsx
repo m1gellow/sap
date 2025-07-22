@@ -1,15 +1,16 @@
 import React, { useState, useCallback, memo } from 'react';
-import { XIcon, PlusIcon, MinusIcon } from 'lucide-react';
+import { XIcon, PlusIcon, MinusIcon, ShoppingCart } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Product } from '../../lib/types';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../lib/context/CartContext';
 import { useSettings } from '../../lib/context/SettingsContext';
-import { getRecommendedProducts } from '../../lib/data/products';
+// import { getRecommendedProducts } from '../../lib/data/products';
 import { formatPrice } from '../../lib/utils/currency';
+import { MoySkladProduct } from '../../types/types';
+import MainButton from '../ui/MainButton';
 
 interface AddedToCartModalProps {
-  product: Product;
+  product: MoySkladProduct;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -26,8 +27,6 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product
   // Если модальное окно не открыто, ничего не рендерим
   if (!isOpen) return null;
 
-  // Получаем рекомендуемые товары
-  const recommendedProducts = getRecommendedProducts(product.id, 3);
 
   const handleDecreaseQuantity = useCallback(() => {
     if (quantity > 1) {
@@ -53,7 +52,7 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-skyblue border-blue border-[2px] rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -100,18 +99,16 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 my-6">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6"
-            >
-              Продолжить покупки
-            </Button>
+    
+            <MainButton  onClick={onClose}>
+               Продолжить покупки
+            </MainButton>
 
             <Link to="/cart" className="w-full sm:w-auto">
-              <Button className="w-full bg-blue text-white rounded-full px-6" onClick={onClose}>
-                Перейти в корзину
-              </Button>
+                <MainButton variant='secondary' className='flex items-center gap-2'  onClick={onClose}>
+                  <ShoppingCart/>
+               Перейти в корзину
+            </MainButton>
             </Link>
           </div>
 

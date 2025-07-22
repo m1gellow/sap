@@ -8,7 +8,7 @@ import { CartItem } from '../components/Cart/CartItem';
 import { Trash2Icon, ShoppingCartIcon, ArrowLeftIcon, TruckIcon, ShieldCheckIcon, GiftIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatPrice } from '../lib/utils/currency';
-
+import MainButton from '../components/ui/MainButton';
 
 export const CartPage: React.FC = () => {
   const { cartItems, totalItems, totalPrice, clearCart } = useCart();
@@ -42,9 +42,7 @@ export const CartPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-3">Ваша корзина пуста</h1>
           <p className="text-gray-500 mb-6">Найдите что-нибудь по душе в нашем каталоге</p>
           <Link to="/catalog" className="inline-block">
-            <Button className="bg-blue rounded-lg px-6 py-3 text-white font-medium">
-              Перейти к покупкам
-            </Button>
+            <Button className="bg-blue rounded-lg px-6 py-3 text-white font-medium">Перейти к покупкам</Button>
           </Link>
         </motion.div>
       </div>
@@ -117,19 +115,16 @@ export const CartPage: React.FC = () => {
               </div>
             </div>
 
-            <Button 
-              onClick={handleCheckout}
-              className="w-full bg-blue rounded-lg py-4 text-white font-medium text-base shadow-md shadow-blue-100/50 transition-all"
-            >
+            <MainButton onClick={handleCheckout} variant="secondary" className='w-full'>
               {!isAuthenticated ? 'Войти для оформления' : 'Перейти к оформлению'}
-            </Button>
+            </MainButton>
 
             <div className="mt-8 space-y-4">
               <div className="flex items-start gap-3 p-3 bg-blue rounded-lg">
                 <TruckIcon className="w-5 h-5 text-blue mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-skyblue">Быстрая доставка</p>
-                  <p className="text-xs text-gray-500">Стоимость рассчитывается при оформлении</p>
+                  <p className="text-xs text-white">Стоимость рассчитывается при оформлении</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">

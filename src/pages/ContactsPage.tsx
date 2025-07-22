@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone, Send, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Phone, Send } from 'lucide-react';
 
 import { useSettings } from '../lib/context/SettingsContext';
 import { contactSchema, ContactFormValues } from '../lib/validation/contactSchema';
@@ -14,6 +14,7 @@ import { Button } from '../components/ui/button';
 
 import { Breadcrumbs } from '../lib/utils/BreadCrumbs';
 import { ContactInfoCard } from '../components/ui/ContactInfoCard';
+import MainButton from '../components/ui/MainButton';
 
 export const ContactsPage: React.FC = () => {
   const { settings } = useSettings();
@@ -82,10 +83,9 @@ export const ContactsPage: React.FC = () => {
             </div>
             {errors.consent && <p className="text-sm text-red-500 -mt-2 ml-7">{errors.consent.message}</p>}
 
-            <Button type="submit" disabled={false} className="w-full h-12 bg-blue hover:bg-blue/90 text-white rounded-xl text-base font-semibold transition-colors">
-               <><Send className="w-5 h-5 mr-2" /> Отправить сообщение</>
-
-            </Button>
+           <MainButton className='w-full'>
+            Отправить сообщение
+           </MainButton>
           </form>
         </div>
       </div>

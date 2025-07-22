@@ -55,7 +55,7 @@ export const CatalogPage: React.FC = () => {
       );
     }
 
-    const checkedBrands = filters.brands.filter((b) => b.checked).map((b) => b.name);
+    const checkedBrands = filters.brands.filter((b: any) => b.checked).map((b: any) => b.name);
     if (checkedBrands.length > 0) {
       filtered = filtered.filter((p) => checkedBrands.includes(p.brand));
     }
