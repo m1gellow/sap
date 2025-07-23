@@ -1,10 +1,9 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Trash2Icon, PlusIcon, MinusIcon } from 'lucide-react';
 import { CartItem as CartItemType } from '../../lib/types';
 import { useCart } from '../../lib/context/CartContext';
 import { useSettings } from '../../lib/context/SettingsContext';
-import { QuantitySelector } from '../ProductCard/QuantitySelector';
-import { motion } from 'framer-motion';
-import { Trash2Icon } from 'lucide-react';
 import { formatPrice } from '../../lib/utils/currency';
 
 interface CartItemProps {
@@ -28,9 +27,13 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
     updateQuantity(product.id, quantity + 1);
   };
 
-  // Получаем валюту из настроек
   const currency = settings?.general?.currency || 'RUB';
-  const formattedPrice = formatPrice(product.priceValue, currency);
+  
+  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+  // Делим цену на 100, чтобы перевести из копеек в рубли
+  const priceInMainUnit = (product.sale_price ?? 0) / 100;
+  const formattedPrice = formatPrice(priceInMainUnit, currency);
+  // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
   return (
     <motion.div
@@ -57,21 +60,35 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
         
         <div className="ml-4 flex-1 min-w-0">
           <h3 className="text-lg font-medium text-gray-900 truncate">{product.name}</h3>
-          <p className="text-gray text-sm mt-1">{product.category}</p>
-          <p className="text-blue font-semibold mt-2">
-            {product.sale_price}
+          <p className="text-gray-500 text-sm mt-1">{product.path_name || 'Категория не указана'}</p>
+          <p className="text-blue-600 font-semibold mt-2">
+            {formattedPrice}
           </p>
         </div>
       </div>
 
       <div className="flex items-center space-x-4 ml-4">
-        <QuantitySelector
-          quantity={quantity}
-          onDecrease={handleDecreaseQuantity}
-          onIncrease={handleIncreaseQuantity}
-          min={1}
-          className="border border-gray-200 rounded-lg"
-        />
+        {/* === Встроенный селектор количества === */}
+        <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+          <button
+            onClick={handleDecreaseQuantity}
+            className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Уменьшить количество"
+          >
+            <MinusIcon className="h-4 w-4" />
+          </button>
+
+          <span className="w-10 text-center font-medium">{quantity}</span>
+
+          <button
+            onClick={handleIncreaseQuantity}
+            className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Увеличить количество"
+          >
+            <PlusIcon className="h-4 w-4" />
+          </button>
+        </div>
+        {/* === КОНЕЦ === */}
 
         <motion.button
           className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors"

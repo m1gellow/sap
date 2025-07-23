@@ -16,6 +16,7 @@ import VisaIcon from '../assets/icons/visa.png';
 import SpbIcon from '../assets/icons/spb.png';
 import CashIcon from '../assets/icons/cash.png';
 import PickupPointModal from '../components/checkout/CheckOutModal';
+import { formatPrice } from '../lib/utils/currency';
 
 const Input = ({ placeholder, type = 'text', value, onChange, ...props }) => (
   <input
@@ -227,7 +228,7 @@ const PaymentOptionsPart = ({ paymentMethods, paymentMethod, setPaymentMethod })
     );
 };
 
-const ResultPart = ({ cartItems, totalPrice, deliveryPrice, finalTotal, deliveryMethodName, onSubmit }) => {
+const ResultPart = ({ cartItems, totalPrice,totalPriceInMainUnit, deliveryPrice, currency, finalTotal, deliveryMethodName, onSubmit }) => {
   return (
     <div className="rounded-lg border-[2px] border-blue p-6 space-y-4">
       <h3 className="text-lg font-bold text-gray">{cartItems.length} товара</h3>
@@ -250,7 +251,7 @@ const ResultPart = ({ cartItems, totalPrice, deliveryPrice, finalTotal, delivery
       <hr className="my-4" />
       <div className="flex justify-between items-center">
         <span className="text-xl font-bold text-gray">Итого:</span>
-        <span className="text-xl font-bold text-gray">{finalTotal.toLocaleString()}₽</span>
+        <span className="text-xl font-bold text-gray">{formatPrice(totalPriceInMainUnit, currency)}</span>
       </div>
       <Button onClick={onSubmit} className="w-full">Оплатить</Button>
     </div>
@@ -271,6 +272,9 @@ const DeliveryPage = () => {
       phone: '', email: '', city: '', region: '',
       address: '', additionalInfo: '', isSameAsUser: true
   });
+
+    const totalPriceInMainUnit = totalPrice / 100;
+   const currency = settings?.general?.currency || 'RUB';
   
   const [deliveryMethod, setDeliveryMethod] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('sbp');
@@ -510,6 +514,8 @@ const DeliveryPage = () => {
             </div>
        
                 <ResultPart
+                totalPriceInMainUnit={totalPriceInMainUnit}
+                currency={currency}
                     cartItems={cartItems}
                     totalPrice={totalPrice}
                     deliveryPrice={deliveryPrice}

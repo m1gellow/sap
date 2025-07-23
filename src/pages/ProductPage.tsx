@@ -8,16 +8,16 @@ import { MoySkladProduct } from '../types/types';
 import { useCart } from '../lib/context/CartContext';
 import { useFavorites } from '../lib/context/FavoritesContext';
 import { Image, Info, ShoppingCart, Loader2, Heart as HeartIcon, BarChart3 as StatsIcon } from 'lucide-react';
-import QuantitySelector from '../components/ui/QuantitySelector';
 import MainButton from '../components/ui/MainButton';
 // --- Убедитесь, что путь к вашему модальному окну верный ---
 import { AddedToCartModal } from '../components/ProductCard/AddedToCartModal'; 
+import { formatPrice } from '../lib/utils/currency';
+import { useSettings } from '../lib/context/SettingsContext';
 
 export const ProductPage: React.FC = () => {
   const { addToCart } = useCart();
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-  
-  const [quantity, setQuantity] = useState(1);
+    const { settings } = useSettings();
   const [product, setProduct] = useState<MoySkladProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
@@ -48,15 +48,10 @@ export const ProductPage: React.FC = () => {
     fetchProduct();
   }, [id]);
 
-  const handleQuantityChange = (value: number) => {
-    const newQuantity = Math.max(1, value);
-    setQuantity(newQuantity);
-  };
-
   // --- Обновленный обработчик ---
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product, quantity);
+      addToCart(product, 1);
       setIsCartModalOpen(true); // Открываем модальное окно
     }
   };
@@ -70,11 +65,13 @@ export const ProductPage: React.FC = () => {
       }
     }
   };
+    const currency = settings?.general?.currency || 'RUB';
+  
+  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+  // Делим цену на 100, чтобы перевести из копеек в рубли
+  const priceInMainUnit = (product?.sale_price ?? 0) / 100;
 
-  const formatPrice = (price?: number) => {
-    if (typeof price !== 'number') return 'Цена по запросу';
-    return `${price.toLocaleString('ru-RU')} ₽`;
-  };
+   const formattedPrice = formatPrice(priceInMainUnit, currency);
 
   if (isLoading) {
     return (
@@ -161,8 +158,8 @@ export const ProductPage: React.FC = () => {
                 <div className="mt-6 pt-6 bg-white shadow-lg rounded-md p-[20px]">
                   <h3 className="text-gray font-bold text-[20px]">Стоимость:</h3>
                   <div className="flex items-center justify-between mt-2">
-                    <p className="text-3xl font-bold text-gray-800">{formatPrice(product.sale_price)}</p>
-                    <QuantitySelector value={quantity} onChange={handleQuantityChange} />
+                    <p className="text-3xl font-bold text-gray-800">{formattedPrice}</p>
+                  
                   </div>
                   <div className="flex items-center gap-3 mt-6">
                     <MainButton className="w-full !py-3" variant="secondary" onClick={handleAddToCart}>

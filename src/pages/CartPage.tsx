@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../lib/context/CartContext';
 import { useSettings } from '../lib/context/SettingsContext';
-import { useProfile } from '../lib/context/ProfileContext';
+import { useProfile } from '../lib/context/ProfileContext'; // Предполагаю, что у вас есть этот хук
 import { Button } from '../components/ui/button';
 import { CartItem } from '../components/Cart/CartItem';
 import { Trash2Icon, ShoppingCartIcon, ArrowLeftIcon, TruckIcon, ShieldCheckIcon, GiftIcon } from 'lucide-react';
@@ -16,8 +16,12 @@ export const CartPage: React.FC = () => {
   const { isAuthenticated, setShowProfileModal } = useProfile();
   const navigate = useNavigate();
 
-  // Получаем настройки доставки или используем значения по умолчанию
   const currency = settings?.general?.currency || 'RUB';
+
+  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+  // Делим итоговую цену на 100, чтобы перевести из копеек в рубли
+  const totalPriceInMainUnit = totalPrice / 100;
+  // --- КОНЕЦ ИЗМЕНЕНИЯ ---
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
@@ -103,15 +107,17 @@ export const CartPage: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600">Товары ({totalItems}):</span>
-                <span className="font-medium">{formatPrice(totalPrice, currency)}</span>
+                {/* ИЗМЕНЕНИЕ ЗДЕСЬ */}
+                <span className="font-medium">{formatPrice(totalPriceInMainUnit, currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Доставка:</span>
                 <span className="text-gray-600">Рассчитывается при оформлении</span>
               </div>
               <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
-                <span className="font-semibold text-lg">Товары:</span>
-                <span className="text-blue font-bold text-xl">{formatPrice(totalPrice, currency)}</span>
+                <span className="font-semibold text-lg">Итого:</span>
+                 {/* И ИЗМЕНЕНИЕ ЗДЕСЬ */}
+                <span className="text-blue font-bold text-xl">{formatPrice(totalPriceInMainUnit, currency)}</span>
               </div>
             </div>
 
@@ -120,11 +126,11 @@ export const CartPage: React.FC = () => {
             </MainButton>
 
             <div className="mt-8 space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-blue rounded-lg">
-                <TruckIcon className="w-5 h-5 text-blue mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                <TruckIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-skyblue">Быстрая доставка</p>
-                  <p className="text-xs text-white">Стоимость рассчитывается при оформлении</p>
+                  <p className="text-sm font-medium text-blue-800">Быстрая доставка</p>
+                  <p className="text-xs text-blue-700">Стоимость рассчитывается при оформлении</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">

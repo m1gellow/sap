@@ -69,16 +69,13 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
         // 2. Получаем полные данные о товарах по их ID
         //    Предполагается, что таблица в Supabase называется 'products'
         const { data: productsData, error: productsError } = await supabase
-          .from('products')
+          .from('moysklad_products' as never)
           .select('*') // Загружаем все поля, чтобы они соответствовали типу MoySkladProduct
           .in('id', productIds);
 
         if (productsError) throw productsError;
 
         if (productsData) {
-          // 3. Устанавливаем полученные данные в состояние
-          //    Мы приводим тип, предполагая, что структура таблицы 'products' в Supabase
-          //    соответствует нашему типу MoySkladProduct в TypeScript.
           setFavorites(productsData as MoySkladProduct[]);
         }
       } else {
@@ -97,39 +94,42 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
       console.warn('Товар уже в избранном');
       return;
     }
-    
+
     // Обновляем состояние немедленно для лучшего UX
     setFavorites((prev) => [...prev, product]);
 
     if (user) {
       // Если пользователь аутентифицирован, сохраняем в базе данных
       try {
-        const { error } = await supabase.from('favorites').insert([{ user_id: user.id, product_id: product.id }]);
+        const { error } = await supabase
+          .from('favorites')
+          .insert([{ user_id: user.id, product_id: product.id }]);
         if (error) {
-           console.error('Ошибка при добавлении в избранное в БД:', error);
-           // Если произошла ошибка, откатываем изменение состояния
-           setFavorites((prev) => prev.filter((fav) => fav.id !== product.id));
+          console.error('Ошибка при добавлении в избранное в БД:', error);
+          // Если произошла ошибка, откатываем изменение состояния
+          setFavorites((prev) => prev.filter((fav) => fav.id !== product.id));
         }
       } catch (error) {
         console.error('Критическая ошибка при добавлении в избранное:', error);
       }
-    } 
+    }
     // Если пользователь не авторизован, useEffect выше сохранит данные в localStorage
   };
 
   // Удаление товара из избранного
-  const removeFromFavorites = async (productId: string) => { // Изменено: productId теперь string
+  const removeFromFavorites = async (productId: string) => {
+    // Изменено: productId теперь string
     // Обновляем состояние немедленно
     setFavorites((prev) => prev.filter((fav) => fav.id !== productId));
-    
+
     if (user) {
       // Если пользователь аутентифицирован, удаляем из базы данных
       try {
         const { error } = await supabase.from('favorites').delete().match({ user_id: user.id, product_id: productId });
 
         if (error) {
-            console.error('Ошибка при удалении из избранного из БД:', error);
-            // Тут можно реализовать логику отката, если это необходимо
+          console.error('Ошибка при удалении из избранного из БД:', error);
+          // Тут можно реализовать логику отката, если это необходимо
         }
       } catch (error) {
         console.error('Критическая ошибка при удалении из избранного:', error);
@@ -139,7 +139,8 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   // Проверка, находится ли товар в избранном
-  const isFavorite = (productId: string): boolean => { // Изменено: productId теперь string
+  const isFavorite = (productId: string): boolean => {
+    // Изменено: productId теперь string
     return favorites.some((fav) => fav.id === productId);
   };
 
