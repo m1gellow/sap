@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '../types';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from './AuthContext';
+import { MoySkladProduct } from '../../types/types';
 
 interface FavoritesContextType {
-  favorites: Product[];
-  addToFavorites: (product: Product) => Promise<void>;
-  removeFromFavorites: (productId: number) => Promise<void>;
-  isFavorite: (productId: number) => boolean;
+  favorites: MoySkladProduct[];
+  addToFavorites: (product: MoySkladProduct) => Promise<void>;
+  removeFromFavorites: (productId: string) => Promise<void>; // Изменено: productId теперь string
+  isFavorite: (productId: string) => boolean; // Изменено: productId теперь string
   totalFavorites: number;
   isLoading: boolean;
 }
@@ -16,25 +16,28 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 const FAVORITES_STORAGE_KEY = 'favorites_items';
 
-export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [favorites, setFavorites] = useState<Product[]>([]);
+export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [favorites, setFavorites] = useState<MoySkladProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
 
-  // Загружаем избранное при аутентификации пользователя
+  // Загружаем избранное при изменении состояния пользователя
   useEffect(() => {
     if (user) {
       loadFavoritesFromDatabase();
     } else {
-      // Если пользователь не аутентифицирован, загрузим из localStorage
+      // Если пользователь не аутентифицирован, загружаем из localStorage
       const savedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
       if (savedFavorites) {
         try {
-          setFavorites(JSON.parse(savedFavorites));
+          const parsedFavorites: MoySkladProduct[] = JSON.parse(savedFavorites);
+          setFavorites(parsedFavorites);
         } catch (error) {
           console.error('Ошибка при загрузке избранного из localStorage:', error);
           localStorage.removeItem(FAVORITES_STORAGE_KEY);
         }
+      } else {
+        setFavorites([]); // Очищаем избранное, если в localStorage ничего нет
       }
     }
   }, [user]);
@@ -52,7 +55,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setIsLoading(true);
     try {
-      // Получаем ID товаров, которые пользователь добавил в избранное
+      // 1. Получаем ID товаров, которые пользователь добавил в избранное
       const { data: favoritesData, error: favoritesError } = await supabase
         .from('favorites')
         .select('product_id')
@@ -63,91 +66,83 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (favoritesData && favoritesData.length > 0) {
         const productIds = favoritesData.map((fav) => fav.product_id);
 
-        // Получаем данные о товарах из таблицы products
+        // 2. Получаем полные данные о товарах по их ID
+        //    Предполагается, что таблица в Supabase называется 'products'
         const { data: productsData, error: productsError } = await supabase
           .from('products')
-          .select('*, categories(name)')
+          .select('*') // Загружаем все поля, чтобы они соответствовали типу MoySkladProduct
           .in('id', productIds);
 
         if (productsError) throw productsError;
 
         if (productsData) {
-          // Преобразуем данные в формат, необходимый для отображения
-          const formattedProducts: Product[] = productsData.map((product) => ({
-            id: product.id,
-            name: product.name,
-            brand: product.brand,
-            price: `${product.price} P.`,
-            priceValue: product.price,
-            image: product.image,
-            favoriteIcon: '/group-213.png', // заглушка, можно удалить это поле или заменить на реальное
-            category: product.categories.name,
-            inStock: product.in_stock,
-          }));
-
-          setFavorites(formattedProducts);
+          // 3. Устанавливаем полученные данные в состояние
+          //    Мы приводим тип, предполагая, что структура таблицы 'products' в Supabase
+          //    соответствует нашему типу MoySkladProduct в TypeScript.
+          setFavorites(productsData as MoySkladProduct[]);
         }
       } else {
-        setFavorites([]);
+        setFavorites([]); // Если у пользователя нет избранных товаров в БД
       }
     } catch (error) {
-      console.error('Ошибка при загрузке избранного:', error);
+      console.error('Ошибка при загрузке избранного из БД:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   // Добавление товара в избранное
-  const addToFavorites = async (product: Product) => {
-    // Проверяем, есть ли уже этот товар в избранном
+  const addToFavorites = async (product: MoySkladProduct) => {
     if (isFavorite(product.id)) {
+      console.warn('Товар уже в избранном');
       return;
     }
+    
+    // Обновляем состояние немедленно для лучшего UX
+    setFavorites((prev) => [...prev, product]);
 
-    // Если пользователь аутентифицирован, сохраняем в базе данных
     if (user) {
+      // Если пользователь аутентифицирован, сохраняем в базе данных
       try {
         const { error } = await supabase.from('favorites').insert([{ user_id: user.id, product_id: product.id }]);
-
-        if (error) throw error;
-
-        // Обновляем локальное состояние
-        setFavorites((prev) => [...prev, product]);
+        if (error) {
+           console.error('Ошибка при добавлении в избранное в БД:', error);
+           // Если произошла ошибка, откатываем изменение состояния
+           setFavorites((prev) => prev.filter((fav) => fav.id !== product.id));
+        }
       } catch (error) {
-        console.error('Ошибка при добавлении в избранное:', error);
+        console.error('Критическая ошибка при добавлении в избранное:', error);
       }
-    } else {
-      // Иначе сохраняем только в локальном состоянии
-      setFavorites((prev) => [...prev, product]);
-    }
+    } 
+    // Если пользователь не авторизован, useEffect выше сохранит данные в localStorage
   };
 
   // Удаление товара из избранного
-  const removeFromFavorites = async (productId: number) => {
-    // Если пользователь аутентифицирован, удаляем из базы данных
+  const removeFromFavorites = async (productId: string) => { // Изменено: productId теперь string
+    // Обновляем состояние немедленно
+    setFavorites((prev) => prev.filter((fav) => fav.id !== productId));
+    
     if (user) {
+      // Если пользователь аутентифицирован, удаляем из базы данных
       try {
-        const { error } = await supabase.from('favorites').delete().eq('user_id', user.id).eq('product_id', productId);
+        const { error } = await supabase.from('favorites').delete().match({ user_id: user.id, product_id: productId });
 
-        if (error) throw error;
-
-        // Обновляем локальное состояние
-        setFavorites((prev) => prev.filter((fav) => fav.id !== productId));
+        if (error) {
+            console.error('Ошибка при удалении из избранного из БД:', error);
+            // Тут можно реализовать логику отката, если это необходимо
+        }
       } catch (error) {
-        console.error('Ошибка при удалении из избранного:', error);
+        console.error('Критическая ошибка при удалении из избранного:', error);
       }
-    } else {
-      // Иначе удаляем только из локального состояния
-      setFavorites((prev) => prev.filter((fav) => fav.id !== productId));
     }
+    // Если пользователь не авторизован, useEffect выше сохранит данные в localStorage
   };
 
   // Проверка, находится ли товар в избранном
-  const isFavorite = (productId: number): boolean => {
+  const isFavorite = (productId: string): boolean => { // Изменено: productId теперь string
     return favorites.some((fav) => fav.id === productId);
   };
 
-  // Общее количество избранных товаров
   const totalFavorites = favorites.length;
 
   return (

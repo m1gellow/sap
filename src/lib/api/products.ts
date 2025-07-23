@@ -1,3 +1,4 @@
+import { MoySkladProduct } from '../../types/types';
 import { supabase } from '../supabase';
 
 

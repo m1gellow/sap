@@ -5,7 +5,7 @@ import { getNewProducts } from '../../lib/api/products';
 
 
 export const NewItemsSection = () => {
-    const { data: newProducts, isLoading, isError } = useQuery({
+    const { data: newProducts, isLoading } = useQuery({
         queryKey: ['newProducts'],
         queryFn: getNewProducts,
         staleTime: 1000 * 60 * 10,

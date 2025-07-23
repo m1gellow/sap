@@ -31,7 +31,7 @@ export const SectionWrapper = ({
     >
       <div className={containerClassName}>
         <h2 className={cn(
-          'text-3xl md:text-4xl font-bold text-gray-800 mb-8 md:mb-10',
+          'text-[30px] md:text-[40px] font-bold text-gray mb-8 md:mb-10',
           'text-center md:text-left',
           titleClassName
         )}>

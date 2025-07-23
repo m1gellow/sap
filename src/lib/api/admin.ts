@@ -23,7 +23,7 @@ export const getAdminDashboardStats = async () => {
 
     // Получаем товары с низким остатком
     const { data: lowStockItems, error: stockError } = await supabase
-      .from('moysklad_products')
+      .from('moysklad_products' as never)
       .select('id, name, stock')
       .lte('stock', 2)
       .eq('archived', false)
