@@ -1,6 +1,5 @@
 import React, { useState, useCallback, memo } from 'react';
 import { XIcon, PlusIcon, MinusIcon, ShoppingCart } from 'lucide-react';
-import { Button } from '../ui/button';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../lib/context/CartContext';
 import { useSettings } from '../../lib/context/SettingsContext';
@@ -13,16 +12,18 @@ interface AddedToCartModalProps {
   product: MoySkladProduct;
   isOpen: boolean;
   onClose: () => void;
+  quant: number
 }
 
-export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product, isOpen, onClose }) => {
-  const [quantity, setQuantity] = useState(1);
+export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product, isOpen, onClose, quant }) => {
+  const [quantity, setQuantity] = useState(quant);
   const { updateQuantity } = useCart();
   const { settings } = useSettings();
 
   // Получаем валюту из настроек
-  const currency = settings?.general?.currency || 'RUB';
-  const formattedPrice = formatPrice(product.priceValue, currency);
+   const currency = settings?.general?.currency || 'RUB';
+  const priceInMainUnit = (product.sale_price ?? 0) / 100;
+  const formattedPrice = formatPrice(priceInMainUnit, currency);
 
   // Если модальное окно не открыто, ничего не рендерим
   if (!isOpen) return null;
@@ -71,7 +72,7 @@ export const AddedToCartModal: React.FC<AddedToCartModalProps> = memo(({ product
             <div className="flex-1">
               <h4 className="font-medium text-gray-800">{product.name}</h4>
               <p className="text-gray-600 text-sm">{product.brand}</p>
-              <p className="font-semibold text-gray-900 mt-1">{product.sale_price}</p>
+              <p className="font-semibold text-gray-900 mt-1">{formattedPrice}</p>
             </div>
 
             <div className="flex items-center border rounded-full overflow-hidden">

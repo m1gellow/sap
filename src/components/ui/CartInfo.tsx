@@ -2,9 +2,15 @@
 import { useCart } from '../../lib/context/CartContext';
 import { ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../lib/context/SettingsContext';
+import { formatPrice } from '../../lib/utils/currency';
 
 export const CartInfo = () => {
-    const { totalPrice } = useCart(); // Только этот компонент зависит от корзины
+    const { totalPrice } = useCart();
+      const { settings } = useSettings();
+      const currency = settings?.general?.currency || 'RUB';
+      const priceInMainUnit = (totalPrice ?? 0) / 100;
+      const formattedPrice = formatPrice(priceInMainUnit, currency);
 
     return (
         <Link to={'/cart'}>
@@ -12,7 +18,7 @@ export const CartInfo = () => {
                 <ShoppingBag className="text-text-primary" />
                 {totalPrice > 0 && (
                     <span className="bg-blue text-white px-2 py-1 text-xs font-light rounded-md">
-                        {totalPrice} р.
+                        {formattedPrice}
                     </span>
                 )}
             </div>

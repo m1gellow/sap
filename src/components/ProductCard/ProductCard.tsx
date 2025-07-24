@@ -3,10 +3,12 @@ import { useSettings } from '../../lib/context/SettingsContext';
 import { ChartColumnStacked, Heart, ShoppingCart, Info } from 'lucide-react';
 import { formatPrice } from '../../lib/utils/currency';
 import { MoySkladProduct } from '../../types/types';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import QuantitySelector from '../ui/QuantitySelector';
 import { useFavorites } from '../../lib/context/FavoritesContext';
+import { useCart } from '../../lib/context/CartContext';
+import { AddedToCartModal } from './AddedToCartModal';
 
 interface ProductCardProps {
   product?: MoySkladProduct;
@@ -19,25 +21,21 @@ export const ProductCard = ({
   product,
   isLarge = false,
   className = '',
-  onAddToCart,
 }: ProductCardProps) => {
+    const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const { settings } = useSettings();
   const [quantity, setQuantity] = useState(1);
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false)
 
   if (!product) {
-    return null; // Ранний выход, если нет данных о товаре
+    return null; 
   }
   
   const currency = settings?.general?.currency || 'RUB';
-  
-  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-  // Делим цену на 100, чтобы перевести из копеек в рубли
   const priceInMainUnit = (product.sale_price ?? 0) / 100;
   const formattedPrice = formatPrice(priceInMainUnit, currency);
-  // --- КОНЕЦ ИЗМЕНЕНИЯ ---
-
   const isInStock = product.stock > 0 && !product.archived;
   const isProductInFavorites = isFavorite(product.id);
 
@@ -52,8 +50,9 @@ export const ProductCard = ({
   };
 
   const handleAddToCart = () => {
-    if (isInStock && onAddToCart) {
-      onAddToCart(product, quantity);
+    if (product) {
+      addToCart(product, 1);
+      setIsCartModalOpen(true); // Открываем модальное окно
     }
   };
 
@@ -108,8 +107,8 @@ export const ProductCard = ({
           <button aria-label="Добавить в избранное" onClick={toggleFavorite}>
             <Heart color={isProductInFavorites ? '#ff0000' : '#003153'} size={20} fill={isProductInFavorites ? '#ff0000' : 'none'} />
           </button>
-          <button aria-label="Добавить в корзину" onClick={handleAddToCart} disabled={!isInStock}>
-            <ShoppingCart color={isInStock ? '#003153' : '#9F9F9F'} size={20} />
+          <button aria-label="Добавить в корзину" onClick={handleAddToCart} >
+            <ShoppingCart color={!isInStock ? '#003153' : '#9F9F9F'} size={20} />
           </button>
           <button aria-label="Сравнить товар">
             <ChartColumnStacked color="#003153" size={20} />
@@ -127,7 +126,7 @@ export const ProductCard = ({
           <div className={`${isLarge ? 'mt-auto' : ''} flex items-center justify-between`}>
             <span className="text-gray font-bold text-xl">{formattedPrice}</span>
 
-            {isInStock ? (
+            {!isInStock ? (
               <QuantitySelector quantity={quantity} handleQuantityChange={handleQuantityChange} />
             ) : (
               <div className="h-8 flex items-center">
@@ -137,6 +136,12 @@ export const ProductCard = ({
           </div>
         </div>
       </div>
+        {/* --- Модальное окно --- */}
+      <AnimatePresence>
+        {isCartModalOpen && (
+          <AddedToCartModal quant={quantity} product={product} isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
