@@ -7,7 +7,9 @@ interface MainButtonProps {
   variant?: 'primary' | 'secondary' | 'icon' | 'action' | "outline";
   children?: ReactNode;
   onClick?: MouseEventHandler<HTMLButtonElement>;
-  hasIcon?: boolean; // Новый проп для указания наличия иконки
+  hasIcon?: boolean; 
+  type?: "button" | "submit" | "reset",
+  disabled?: boolean;
 }
 
 const MainButton = ({
@@ -16,7 +18,9 @@ const MainButton = ({
   variant = 'primary',
   children,
   onClick,
-  hasIcon = false, // По умолчанию false
+  hasIcon = false,
+  type = "button",
+  disabled = false
 }: MainButtonProps) => {
   const mainButtonClassName = cn(
     'flex items-center justify-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed',
@@ -41,7 +45,7 @@ const MainButton = ({
   );
 
   return (
-    <button className={mainButtonClassName} onClick={onClick}>
+    <button className={mainButtonClassName} type={type} disabled={disabled} onClick={onClick}>
       {children}
     </button>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion'; // <-- Импорт для анимации
+import { AnimatePresence } from 'framer-motion';
 import { SectionWrapper } from '../components/ui/SectionWrapper';
 import { Breadcrumbs } from '../lib/utils/BreadCrumbs';
 import { getProductById } from '../lib/api/products';
@@ -9,7 +9,6 @@ import { useCart } from '../lib/context/CartContext';
 import { useFavorites } from '../lib/context/FavoritesContext';
 import { Image, Info, ShoppingCart, Loader2, Heart as HeartIcon, BarChart3 as StatsIcon } from 'lucide-react';
 import MainButton from '../components/ui/MainButton';
-// --- Убедитесь, что путь к вашему модальному окну верный ---
 import { AddedToCartModal } from '../components/ProductCard/AddedToCartModal';
 import { formatPrice } from '../lib/utils/currency';
 import { useSettings } from '../lib/context/SettingsContext';
@@ -22,7 +21,7 @@ export const ProductPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
   const [isParametersOpen, setIsParametersOpen] = useState(true);
-  const [isCartModalOpen, setIsCartModalOpen] = useState(false); // <-- Состояние для модального окна
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
 
@@ -48,11 +47,10 @@ export const ProductPage: React.FC = () => {
     fetchProduct();
   }, [id]);
 
-  // --- Обновленный обработчик ---
   const handleAddToCart = () => {
     if (product) {
       addToCart(product, 1);
-      setIsCartModalOpen(true); // Открываем модальное окно
+      setIsCartModalOpen(true);
     }
   };
 
@@ -65,13 +63,15 @@ export const ProductPage: React.FC = () => {
       }
     }
   };
+
   const currency = settings?.general?.currency || 'RUB';
-
-  // --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
-  // Делим цену на 100, чтобы перевести из копеек в рубли
   const priceInMainUnit = (product?.sale_price ?? 0) / 100;
-
   const formattedPrice = formatPrice(priceInMainUnit, currency);
+
+  // Функция для извлечения данных из описания
+  const extractFromDescription = (pattern: RegExp, fallback: string) => {
+    return product?.description?.match(pattern)?.[1] || fallback;
+  };
 
   if (isLoading) {
     return (
@@ -97,16 +97,12 @@ export const ProductPage: React.FC = () => {
 
   return (
     <>
-      {' '}
-      {/* Обертка в фрагмент, чтобы модальное окно было на том же уровне */}
       <div className="container">
         <SectionWrapper title={product.name}>
           <Breadcrumbs />
-          {/* Main Content: Images + Info */}
           <div className="flex flex-col lg:flex-row gap-[40px]">
             {/* Image Gallery */}
             <div className="flex flex-col-reverse md:flex-row items-start gap-[20px] md:gap-[40px]">
-              {/* Thumbnails */}
               <div className="flex flex-row md:flex-col gap-[20px] md:gap-[40px]">
                 <div className="w-[100px] h-[100px] md:w-[160px] md:h-[160px] border-2 border-blue rounded-[8px] p-1 flex-shrink-0">
                   <img
@@ -122,7 +118,6 @@ export const ProductPage: React.FC = () => {
                   <Image className="text-gray-300" size={48} />
                 </div>
               </div>
-              {/* Main Image */}
               <div className="w-full md:w-[460px] h-auto md:h-[560px] border-2 rounded-[8px] p-4 flex items-center justify-center">
                 <img
                   src={product.image_url}
@@ -139,21 +134,34 @@ export const ProductPage: React.FC = () => {
                 <h2 className="text-gray-700 font-bold text-[18px]">Основные характеристики:</h2>
                 <div className="mt-4 flex flex-col gap-3 text-sm">
                   <div className="flex items-center gap-4">
-                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Размер:</span>
-                    <div className="flex items-center gap-2">
-                      <div className="border border-blue font-normal px-5 py-1 rounded-md cursor-pointer">10'0</div>
-                      <div className="bg-blue text-white font-normal px-5 py-1 rounded-md cursor-pointer">10'6</div>
+                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Размеры:</span>
+                    <div className="border border-gray-300 text-gray-800 font-normal px-5 py-1 rounded-md">
+                      {extractFromDescription(/Paзмеpы: (\d+\*\d+\*\d+ см)/, '335*84*15 см')}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Вес доски:</span>
+                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Длина в футах:</span>
                     <div className="border border-gray-300 text-gray-800 font-normal px-5 py-1 rounded-md">
-                      {product.weight ? `${product.weight / 1000} кг` : '8,9 кг'}
+                      {extractFromDescription(/Длина в футах \(ft\): (.*)/, "10'6\"")}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Грузоподъемность:</span>
+                    <div className="border border-gray-300 text-gray-800 font-normal px-5 py-1 rounded-md">
+                      {extractFromDescription(/Гpузoподъёмнocть: (.*)/, 'до 160 кг')}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Материал:</span>
+                    <div className="border border-gray-300 text-gray-800 font-normal px-5 py-1 rounded-md">
+                      {extractFromDescription(/Материал: (.*)/, '2 слоя, пвх')}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="w-[180px] text-[#9F9F9F] text-[16px] font-bold">Максимальное давление:</span>
-                    <div className="bg-blue text-white font-normal px-5 py-1 rounded-md">25 psi</div>
+                    <div className="bg-blue text-white font-normal px-5 py-1 rounded-md">
+                      {extractFromDescription(/Макcимальнoе давлeниe: (.*)/, '15 psi')}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -252,17 +260,22 @@ export const ProductPage: React.FC = () => {
               </div>
               {isParametersOpen && (
                 <div className="p-4 pt-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-gray-700 text-sm">
-                  {/* ...содержимое параметров... */}
+                  {/* Дополнительные параметры можно добавить здесь */}
                 </div>
               )}
             </div>
           </div>
         </SectionWrapper>
       </div>
-      {/* --- Модальное окно --- */}
+      
       <AnimatePresence>
         {isCartModalOpen && (
-          <AddedToCartModal quant={1} product={product} isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
+          <AddedToCartModal 
+            quant={1} 
+            product={product} 
+            isOpen={isCartModalOpen} 
+            onClose={() => setIsCartModalOpen(false)} 
+          />
         )}
       </AnimatePresence>
     </>

@@ -4,6 +4,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useProfile } from '../../lib/context/ProfileContext';
 import { XIcon, UserIcon, LockIcon, MailIcon, Loader2 } from 'lucide-react';
+import MainButton from '../ui/MainButton';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -183,7 +184,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </div>
               )}
 
-              <Button
+              <MainButton
                 type="submit"
                 className="w-full bg-blue hover:bg-blue text-white py-2 rounded-[53px] flex items-center justify-center"
                 disabled={isLoading}
@@ -198,7 +199,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 ) : (
                   'Зарегистрироваться'
                 )}
-              </Button>
+              </MainButton>
             </form>
 
             <div className="mt-6 text-center">

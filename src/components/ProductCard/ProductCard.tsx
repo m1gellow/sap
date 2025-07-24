@@ -66,7 +66,7 @@ export const ProductCard = ({
 
   return (
     <div
-      className={`${isLarge ? 'h-full w-full flex flex-col' : 'max-w-[260px] max-h-[484px] h-full w-full flex flex-col'} ${className}`}
+      className={`${isLarge ? 'h-full w-full flex flex-col ' : 'max-w-[260px]  max-h-[484px] h-full w-full flex flex-col'} ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

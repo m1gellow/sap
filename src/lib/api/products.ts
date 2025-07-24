@@ -64,7 +64,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 export const getProductsByCategory = async (categoryName: string): Promise<Product[]> => {
   try {
     const { data, error } = await supabase
-      .from('products')
+      .from('moysklad_products')
       .select(`
         *,
         categories!inner (
@@ -125,7 +125,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<P
 
     // Создаем товар
     const { data, error } = await supabase
-      .from('products')
+      .from('moysklad_products')
       .insert({
         name: productData.name,
         brand: productData.brand,
@@ -192,7 +192,7 @@ export const updateProduct = async (id: number, productData: Partial<Product>): 
 
     // Обновляем товар
     const { data, error } = await supabase
-      .from('products')
+      .from('moysklad_products')
       .update(updateData)
       .eq('id', id)
       .select(`
@@ -269,7 +269,7 @@ export const deleteProduct = async (id: number): Promise<void> => {
 
     // 5. Удаляем товар
     const { error: deleteProductError } = await supabase
-      .from('products')
+      .from('moysklad_products' as never)
       .delete()
       .eq('id', id);
 

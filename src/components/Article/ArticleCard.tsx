@@ -16,7 +16,7 @@ const categoryColors: { [key: string]: string } = {
 export const ArticleCard = ({ article }: ArticleCardProps) => {
   return (
     <Link
-      to={`/blog/${article.slug}`}
+      to={`/info/${article.slug}`}
       className="group flex gap-4 p-4 rounded-lg hover:bg-gray-100/70 transition-colors"
     >
       <div className="w-[100px] h-[100px] bg-skyblue rounded-md flex-shrink-0 overflow-hidden">

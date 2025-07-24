@@ -48,7 +48,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             .from('admins')
             .select('*')
             .eq('id', user.id)
-            .single();
+           .maybeSingle();
 
           if (adminError) {
             console.error('Ошибка при получении данных администратора:', adminError);

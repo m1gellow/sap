@@ -36,7 +36,7 @@ export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (categoriesError) throw categoriesError;
 
         // Получаем уникальные бренды из таблицы товаров
-        const { data: brandsData, error: brandsError } = await supabase.from('products').select('brand').order('brand');
+        const { data: brandsData, error: brandsError } = await supabase.from('moysklad_products' as never).select('brand').order('brand');
 
         if (brandsError) throw brandsError;
 

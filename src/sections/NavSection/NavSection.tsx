@@ -11,7 +11,6 @@ import MainButton from '../../components/ui/MainButton';
 const mainNavLinks = [
   { href: '/', label: 'Главная' },
   { href: '/info', label: 'Покупателю' },
-  { href: '/sales', label: 'Акции' },
   { href: '/delivery-info', label: 'Доставка и оплата' },
   { href: '/contacts', label: 'Контакты' },
 ];
