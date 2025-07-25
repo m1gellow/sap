@@ -12,6 +12,8 @@ import {
   Car,
   Truck,
 } from 'lucide-react';
+import { useSettings } from '../../lib/context/SettingsContext';
+import { formatPrice } from '../../lib/utils/currency';
 
 // Types for better type safety (optional if using TypeScript)
 type PickupPoint = {
@@ -138,7 +140,7 @@ const SelectPickupPoint = ({ onSelect }: { onSelect: (point: PickupPoint) => voi
             </button>
           </h3>
           {isDropdownOpen && (
-            <div className="absolute mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-10">
+            <div className="absolute mt-2 ml-64 bg-white border border-gray-300 rounded-md shadow-lg z-10">
               {['Ближайшие', 'По рейтингу', 'По времени работы'].map((option) => (
                 <div 
                   key={option}
@@ -278,7 +280,13 @@ const DeliveryCost = ({
   deliveryPrice: number;
   productCount: number;
 }) => {
-  const total = totalPrice + deliveryPrice;
+  const { settings } = useSettings();
+  const currency = settings?.general?.currency || 'RUB';
+  
+  // Цена товаров в копейках, переводим в рубли делением на 100
+  const productsPriceInRubles = totalPrice / 100;
+  // Цена доставки уже в рублях, просто используем как есть
+  const total = productsPriceInRubles + deliveryPrice;
   
   return (
     <div className="space-y-4">
@@ -289,7 +297,7 @@ const DeliveryCost = ({
           <Package className="text-blue" />
           <span>Цена товаров:</span>
         </div>
-        <span>{totalPrice.toLocaleString('ru-RU')}₽</span>
+        <span>{formatPrice(productsPriceInRubles, currency)}</span>
       </div>
       
       <div className="flex justify-between items-center text-gray-700">
@@ -304,7 +312,7 @@ const DeliveryCost = ({
       
       <div className="flex justify-between items-center font-bold text-xl">
         <span>Итого:</span>
-        <span>{total.toLocaleString('ru-RU')}₽</span>
+        <span>{formatPrice(total, currency)}</span>
       </div>
     </div>
   );

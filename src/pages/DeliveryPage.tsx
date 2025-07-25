@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CircleUser, Mail, Phone, ShoppingCart, Truck } from 'lucide-react';
+import { CircleUser, Mail, Phone, ShoppingCart, Truck, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useCart } from '../lib/context/CartContext';
@@ -15,10 +15,26 @@ import { Button } from '../components/ui/button';
 import VisaIcon from '../assets/icons/visa.png';
 import SpbIcon from '../assets/icons/spb.png';
 import CashIcon from '../assets/icons/cash.png';
-import CdekModal from '../components/checkout/CdekModal'; // Убедитесь, что путь правильный
+import CdekModal from '../components/checkout/CdekModal';
 import { formatPrice } from '../lib/utils/currency';
 
-// Вспомогательные компоненты для UI (Input, Textarea, и т.д.)
+// Типы для TypeScript
+type PickupPoint = {
+  id: number;
+  name: string;
+  address: string;
+  issuer: string;
+  deliveryTime: string;
+  phone: string;
+  workHours: {
+    weekdays: string;
+    weekend: string;
+  };
+  maxWeight: number;
+  directions: string;
+};
+
+// Вспомогательные компоненты UI
 const Input = ({ placeholder, type = 'text', value, onChange, ...props }) => (
   <input
     type={type}
@@ -73,7 +89,23 @@ const RadioOption = ({ name, id, children, checked, onChange }) => (
   </label>
 );
 
-// Разделы страницы оформления заказа
+// Компонент для отображения выбранного пункта СДЭК
+const SelectedCdekPointInfo = ({ point }: { point: PickupPoint }) => (
+  <div className="rounded-lg bg-blue-50 border border-blue p-4 mt-4">
+    <h3 className="font-bold text-gray mb-2">Выбран пункт выдачи СДЭК:</h3>
+    <div className="flex items-start gap-2">
+      <MapPin size={16} className="mt-1 text-blue" />
+      <div>
+        <p className="font-medium">{point.name}</p>
+        <p className="text-gray-700">{point.address}</p>
+        <p className="text-sm text-gray-500 mt-1">График работы: {point.workHours.weekdays}, {point.workHours.weekend}</p>
+        <p className="text-sm text-gray-500">Телефон: {point.phone}</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Разделы страницы
 const PersonalDataPart = ({ profile }) => {
   if (!profile) return null;
   return (
@@ -179,16 +211,55 @@ const PaymentOptionsPart = ({ paymentMethods, paymentMethod, setPaymentMethod })
     );
 };
 
-const ResultPart = ({ cartItems, totalPrice, totalPriceInMainUnit, deliveryPrice, currency, finalTotal, deliveryMethodName, onSubmit }) => {
+const ResultPart = ({ 
+  cartItems, 
+  totalPrice, 
+  totalPriceInMainUnit, 
+  deliveryPrice, 
+  currency, 
+  finalTotal, 
+  deliveryMethodName, 
+  onSubmit,
+  selectedCdekPoint 
+}) => {
   return (
     <div className="rounded-lg border-[2px] border-blue p-6 space-y-4">
       <h3 className="text-lg font-bold text-gray">{cartItems.length} товара</h3>
       <div className="space-y-3 text-gray">
-        <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><ShoppingCart className="h-5 w-5 text-gray" /><span>Цена товаров:</span></div><span>{totalPrice.toLocaleString()}₽</span></div>
-        <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-3"><Truck className="h-5 w-5 text-gray" /><span>Доставка ({deliveryMethodName}):</span></div><span>{deliveryPrice > 0 ? `${deliveryPrice.toLocaleString()}₽` : 'Бесплатно'}</span></div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <ShoppingCart className="h-5 w-5 text-gray" />
+            <span>Цена товаров:</span>
+          </div>
+          <span>{totalPrice.toLocaleString()}₽</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Truck className="h-5 w-5 text-gray" />
+            <span>Доставка ({deliveryMethodName}):</span>
+          </div>
+          <span>{deliveryPrice > 0 ? `${deliveryPrice.toLocaleString()}₽` : 'Бесплатно'}</span>
+        </div>
       </div>
+      
+      {deliveryMethodName === 'СДЭК' && selectedCdekPoint && (
+        <div className="bg-blue-50 p-3 rounded-md">
+          <div className="flex items-start gap-2">
+            <MapPin size={16} className="mt-1 text-blue" />
+            <div>
+              <p className="font-medium text-sm">{selectedCdekPoint.name}</p>
+              <p className="text-gray-700 text-sm">{selectedCdekPoint.address}</p>
+              <p className="text-gray-500 text-xs mt-1">График: {selectedCdekPoint.workHours.weekdays}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <hr className="my-4" />
-      <div className="flex justify-between items-center"><span className="text-xl font-bold text-gray">Итого:</span><span className="text-xl font-bold text-gray">{formatPrice(totalPriceInMainUnit, currency)}</span></div>
+      <div className="flex justify-between items-center">
+        <span className="text-xl font-bold text-gray">Итого:</span>
+        <span className="text-xl font-bold text-gray">{formatPrice(totalPriceInMainUnit, currency)}</span>
+      </div>
       <Button onClick={onSubmit} className="w-full">Оплатить</Button>
     </div>
   );
@@ -202,24 +273,50 @@ const DeliveryPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [formState, setFormState] = useState({ lastName: '', firstName: '', middleName: '', phone: '', email: '', city: '', region: '', address: '', additionalInfo: '', isSameAsUser: true });
+  const [formState, setFormState] = useState({ 
+    lastName: '', 
+    firstName: '', 
+    middleName: '', 
+    phone: '', 
+    email: '', 
+    city: '', 
+    region: '', 
+    address: '', 
+    additionalInfo: '', 
+    isSameAsUser: true 
+  });
+  
   const [deliveryMethod, setDeliveryMethod] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('sbp');
   const [isCdekModalOpen, setIsCdekModalOpen] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
+  const [selectedCdekPoint, setSelectedCdekPoint] = useState<PickupPoint | null>(null);
   
   const totalPriceInMainUnit = totalPrice / 100;
   const currency = settings?.general?.currency || 'RUB';
 
-  useEffect(() => { if (!isAuthenticated) { setShowProfileModal(true); } }, [isAuthenticated, setShowProfileModal]);
+  useEffect(() => { 
+    if (!isAuthenticated) { 
+      setShowProfileModal(true); 
+    } 
+  }, [isAuthenticated, setShowProfileModal]);
 
   useEffect(() => {
     if (profile && formState.isSameAsUser) {
         const [profLastName = '', profFirstName = '', profMiddleName = ''] = (profile.name || '').split(' ');
         const profileAddress = (profile.address || '').split(', ');
-        setFormState(prev => ({ ...prev, lastName: profLastName, firstName: profFirstName, middleName: profMiddleName, phone: profile.phone || '', email: profile.email || '', city: profileAddress[0] || '', address: profileAddress.slice(1).join(', ') || '' }));
+        setFormState(prev => ({ 
+          ...prev, 
+          lastName: profLastName, 
+          firstName: profFirstName, 
+          middleName: profMiddleName, 
+          phone: profile.phone || '', 
+          email: profile.email || '', 
+          city: profileAddress[0] || '', 
+          address: profileAddress.slice(1).join(', ') || '' 
+        }));
     }
   }, [profile, formState.isSameAsUser]);
 
@@ -231,28 +328,44 @@ const DeliveryPage = () => {
     ], [settings]);
 
   const paymentMethods = useMemo(() => {
-    const baseMethods = settings?.payment?.paymentMethods?.filter((m) => m.enabled) || [{ id: 'sbp', name: 'СБП', enabled: true }, { id: 'card', name: 'Банковская карта', enabled: true }];
+    const baseMethods = settings?.payment?.paymentMethods?.filter((m) => m.enabled) || [
+      { id: 'sbp', name: 'СБП', enabled: true }, 
+      { id: 'card', name: 'Банковская карта', enabled: true }
+    ];
     if (formState.city.toLowerCase().trim() === 'екатеринбург' && !baseMethods.some(m => m.id === 'cash')) {
         baseMethods.push({ id: 'cash', name: 'Наличные', enabled: true });
     }
     return baseMethods;
   }, [settings, formState.city]);
 
-  useEffect(() => { if (deliveryMethods.length > 0 && !deliveryMethod) { setDeliveryMethod(deliveryMethods[0].id); } }, [deliveryMethods, deliveryMethod]);
+  useEffect(() => { 
+    if (deliveryMethods.length > 0 && !deliveryMethod) { 
+      setDeliveryMethod(deliveryMethods[0].id); 
+    } 
+  }, [deliveryMethods, deliveryMethod]);
   
-  useEffect(() => { if (!paymentMethods.some(m => m.id === paymentMethod)) { setPaymentMethod(paymentMethods[0]?.id || ''); } }, [paymentMethods, paymentMethod]);
+  useEffect(() => { 
+    if (!paymentMethods.some(m => m.id === paymentMethod)) { 
+      setPaymentMethod(paymentMethods[0]?.id || ''); 
+    } 
+  }, [paymentMethods, paymentMethod]);
 
-  const selectedDeliveryMethod = useMemo(() => deliveryMethods.find((method) => method.id === deliveryMethod), [deliveryMethods, deliveryMethod]);
+  const selectedDeliveryMethod = useMemo(() => 
+    deliveryMethods.find((method) => method.id === deliveryMethod), 
+    [deliveryMethods, deliveryMethod]);
+  
   const deliveryPrice = selectedDeliveryMethod?.price || 0;
   const finalTotal = totalPrice + deliveryPrice;
 
-  // Обработчики
+  // Обработчики событий
   const handleCardNumberChange = (e) => {
     const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     const matches = value.match(/\d{1,16}/g);
     const match = (matches && matches[0]) || '';
     const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) { parts.push(match.substring(i, i + 4)); }
+    for (let i = 0, len = match.length; i < len; i += 4) { 
+      parts.push(match.substring(i, i + 4)); 
+    }
     setCardNumber(parts.length ? parts.join(' ') : e.target.value);
   };
 
@@ -261,18 +374,22 @@ const DeliveryPage = () => {
     setExpiryDate(value.length <= 2 ? value : `${value.slice(0, 2)}/${value.slice(2, 4)}`);
   };
 
-  const handleCvvChange = (e) => { setCvv(e.target.value.replace(/\D/g, '')); };
+  const handleCvvChange = (e) => { 
+    setCvv(e.target.value.replace(/\D/g, '')); 
+  };
 
   const handleDeliveryMethodChange = (methodId) => {
     if (methodId === 'cdek') {
         setIsCdekModalOpen(true);
     } else {
         setDeliveryMethod(methodId);
+        setSelectedCdekPoint(null);
     }
   };
 
-  const handleCdekConfirm = (selectedPoint) => {
+  const handleCdekConfirm = (selectedPoint: PickupPoint) => {
     setDeliveryMethod('cdek');
+    setSelectedCdekPoint(selectedPoint);
     setFormState(prev => ({
         ...prev,
         address: selectedPoint.address,
@@ -288,7 +405,10 @@ const DeliveryPage = () => {
     if (!deliveryMethod || !paymentMethod) { alert('Пожалуйста, выберите способ доставки и оплаты'); return; }
 
     try {
-      const fullAddress = deliveryMethod === 'cdek' ? `Пункт выдачи СДЭК: ${formState.address}` : `${formState.city}, ${formState.region}, ${formState.address}`;
+      const fullAddress = deliveryMethod === 'cdek' && selectedCdekPoint 
+        ? `Пункт выдачи СДЭК: ${selectedCdekPoint.name}, ${selectedCdekPoint.address}` 
+        : `${formState.city}, ${formState.region}, ${formState.address}`;
+      
       const fullName = `${formState.lastName} ${formState.firstName} ${formState.middleName}`.trim();
       await updateProfile({ name: fullName, phone: formState.phone });
 
@@ -301,18 +421,26 @@ const DeliveryPage = () => {
         customer_phone: formState.phone,
         delivery_address: fullAddress,
         payment_method: paymentMethods.find((m) => m.id === paymentMethod)?.name || paymentMethod,
-        notes: formState.additionalInfo ? `${formState.additionalInfo}. Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)` : `Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)`,
+        notes: formState.additionalInfo ? 
+          `${formState.additionalInfo}. Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)` : 
+          `Способ доставки: ${selectedDeliveryMethod?.name} (${deliveryPrice} ₽)`,
       };
       
       const { data: orderData, error: orderError } = await supabase.from('orders').insert(newOrder).select().single();
       if (orderError) throw orderError;
 
-      const orderItems = cartItems.map((item) => ({ order_id: orderData.id, product_id: item.product.id, quantity: item.quantity, price: item.product.sale_price }));
+      const orderItems = cartItems.map((item) => ({ 
+        order_id: orderData.id, 
+        product_id: item.product.id, 
+        quantity: item.quantity, 
+        price: item.product.sale_price 
+      }));
+      
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
       if (itemsError) throw itemsError;
 
       clearCart();
-      navigate(`/order-sucess`);
+      navigate(`/order-success`);
     } catch (error) {
       console.error('Ошибка при создании заказа:', error);
       alert('Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте снова.');
@@ -339,6 +467,8 @@ const DeliveryPage = () => {
         onConfirm={handleCdekConfirm}
         totalPrice={totalPrice}
         deliveryPrice={deliveryMethods.find(m => m.id === 'cdek')?.price || 0}
+        productCount={cartItems.length}
+          currency={settings?.general?.currency || 'RUB'} // Передаем валюту
       />
       
       <SectionWrapper title="Оформление заказа" className="px-4 lg:px-8">
@@ -346,18 +476,55 @@ const DeliveryPage = () => {
         <div className="mx-auto flex flex-col gap-[20px]">
             <div className="lg:col-span-2 space-y-5">
                 <PersonalDataPart profile={profile} />
-                <DeliveryOptionsPart deliveryMethods={deliveryMethods} deliveryMethod={deliveryMethod} onDeliveryMethodChange={handleDeliveryMethodChange} />
-                <MainInfoPart formState={formState} setFormState={setFormState} profile={profile} deliveryMethod={deliveryMethod} />
-                <PaymentOptionsPart paymentMethods={paymentMethods} paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} />
+                <DeliveryOptionsPart 
+                  deliveryMethods={deliveryMethods} 
+                  deliveryMethod={deliveryMethod} 
+                  onDeliveryMethodChange={handleDeliveryMethodChange} 
+                />
+                <MainInfoPart 
+                  formState={formState} 
+                  setFormState={setFormState} 
+                  profile={profile} 
+                  deliveryMethod={deliveryMethod} 
+                />
+                
+                {deliveryMethod === 'cdek' && selectedCdekPoint && (
+                  <SelectedCdekPointInfo point={selectedCdekPoint} />
+                )}
+                
+                <PaymentOptionsPart 
+                  paymentMethods={paymentMethods} 
+                  paymentMethod={paymentMethod} 
+                  setPaymentMethod={setPaymentMethod} 
+                />
                 
                 {paymentMethod === 'card' && (
                   <div className="rounded-lg bg-skyblue p-5 space-y-4">
                     <h2 className="text-xl font-bold text-gray">Данные банковской карты</h2>
                     <div className="space-y-4">
-                      <Input placeholder="Номер карты" value={cardNumber} onChange={handleCardNumberChange} maxLength="19" required={paymentMethod === 'card'} />
+                      <Input 
+                        placeholder="Номер карты" 
+                        value={cardNumber} 
+                        onChange={handleCardNumberChange} 
+                        maxLength="19" 
+                        required={paymentMethod === 'card'} 
+                      />
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <Input placeholder="ММ / ГГ" value={expiryDate} onChange={handleExpiryDateChange} maxLength="5" required={paymentMethod === 'card'} />
-                        <Input placeholder="CVV" type="password" value={cvv} onChange={handleCvvChange} maxLength="3" required={paymentMethod === 'card'} />
+                        <Input 
+                          placeholder="ММ / ГГ" 
+                          value={expiryDate} 
+                          onChange={handleExpiryDateChange} 
+                          maxLength="5" 
+                          required={paymentMethod === 'card'} 
+                        />
+                        <Input 
+                          placeholder="CVV" 
+                          type="password" 
+                          value={cvv} 
+                          onChange={handleCvvChange} 
+                          maxLength="3" 
+                          required={paymentMethod === 'card'} 
+                        />
                       </div>
                     </div>
                   </div>
@@ -373,6 +540,7 @@ const DeliveryPage = () => {
                 finalTotal={finalTotal}
                 deliveryMethodName={selectedDeliveryMethod?.name || 'Не выбрана'}
                 onSubmit={handleSubmit}
+                selectedCdekPoint={selectedCdekPoint}
             />
         </div>
       </SectionWrapper>
