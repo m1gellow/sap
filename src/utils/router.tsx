@@ -51,7 +51,7 @@ export const AppRouter = () => {
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/delivery" element={<DeliveryPage />} />
-            <Route path="/order-sucess" element={<OrderSuccess />} />
+            <Route path="/order-success" element={<OrderSuccess />} />
 
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>

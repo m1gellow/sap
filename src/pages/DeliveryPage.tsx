@@ -468,7 +468,7 @@ const DeliveryPage = () => {
         totalPrice={totalPrice}
         deliveryPrice={deliveryMethods.find(m => m.id === 'cdek')?.price || 0}
         productCount={cartItems.length}
-          currency={settings?.general?.currency || 'RUB'} // Передаем валюту
+        
       />
       
       <SectionWrapper title="Оформление заказа" className="px-4 lg:px-8">
